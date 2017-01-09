@@ -21,15 +21,8 @@ PS:对于graphql的一些特殊语法,像参数语法,接口语法,内置指令�
 
 ### 安装 ###
 
-本库位于私有库中,需要在项目composer.json添加库地址 
-```php
-    "repositories":[
-        {
-            "type":"git",
-            "url":"http://117.29.166.222:8088/r/yiisoft/yii2-graphql.git"
-        }
-    ]
-    
+本库位于私有库中,需要在项目composer.json添加库地址,目前还处理开发中
+```php    
 "require": {
     "yiisoft/yii-graphql": "dev-master"
 }
@@ -54,7 +47,7 @@ retrun [
             'user' => 'App\GraphQL\Query\UsersQuery'
         ],
         'mutation' => [
-         
+
         ],
         //
         'types'=>[
@@ -246,7 +239,7 @@ class UserModelQuery extends GraphQLQuery
 'hello' =>  "
         query hello{hello}
     ",
-      
+
     'singleObject' =>  "
         query user {
             user(id:\"2\") {
