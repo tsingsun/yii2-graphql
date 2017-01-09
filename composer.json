@@ -1,0 +1,27 @@
+{
+    "name":"tsingsun/yii2-graphql",
+    "description":"facebook graphql server side for yii2 php framework",
+    "keyword":["yii2","graphql"],    
+    "type":"yii2-extension",
+    "license":"private",
+    "authors":[
+        {
+            "name":"QingShan li",
+            "email":"21997272@qq.com"
+        }
+    ],
+    "minimum-stability":"dev",
+    "require":{
+        "php": ">=5.6.0",
+        "yiisoft/yii2":"~2.0.10",
+        "webonyx/graphql-php": "0.8"
+    },
+    "require-dev":{
+        "phpunit/phpunit": "4.8.*"
+    },
+    "autoload":{
+        "psr-4":{
+            "yii\\graphql\\":"src"
+        }
+    }
+}
