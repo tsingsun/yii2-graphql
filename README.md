@@ -24,7 +24,7 @@ PS:对于graphql的一些特殊语法,像参数语法,接口语法,内置指令�
 本库位于私有库中,需要在项目composer.json添加库地址,目前还处理开发中
 ```php    
 "require": {
-    "yiisoft/yii-graphql": "dev-master"
+    "tsingsun/yii2-graphql": "dev-master"
 }
 ```
 
