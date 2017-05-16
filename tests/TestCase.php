@@ -5,7 +5,7 @@ namespace yiiunit\extensions\graphql;
 use GraphQL\Type\Definition\Config;
 use Yii;
 use yii\di\Container;
-use yii\graphql\Module;
+use yii\graphql\GraphQLModuleTraits;
 use yii\helpers\ArrayHelper;
 use yiiunit\extensions\graphql\data\DataSource;
 use yiiunit\extensions\graphql\objects\mutation\UpdateUserPwdMutation;
@@ -73,9 +73,9 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
                 ],
                 'db'=>[
                     'class' => 'yii\db\Connection',
-                    'dsn' => 'mysql:host=117.29.166.222:4360;dbname=test',
-                    'username' => 'dev_app',
-                    'password' => 'eping',
+                    'dsn' => 'mysql:host=localhost;dbname=test',
+                    'username' => 'root',
+                    'password' => '',
                     'charset' => 'utf8',
                 ],
 
@@ -83,7 +83,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             'modules' => [
                 'graphql' => [
                     'class' => Module::class,
-                    'cache' => 'graphQLCache',
                     'schemas' => [
                         'query' => [
                             'hello' => HelloQuery::class,

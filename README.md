@@ -30,22 +30,23 @@ PS:对于graphql的一些特殊语法,像参数语法,接口语法,内置指令�
 
 ### 在YII使用 ###
 
-在yii的配置文件的Modules中加入
-
+本组件采用trait的方式在Component组件中被引入，组件宿主建议的方式是Module
 ```php
-    'graphql'=>$graphConfigFile
+     class Module extends Module{
+        use GraphQLModuleTrait;
+     }
 ```
-
-在config配置文件夹中加入graph.php,配置例子如下:
-
+配置文件
 ```php
-retrun [
-    'class'=>'yii\graphql\module'
-    //主graphql协议配置
-    'schemas' => [        
-        'query' => [
-            'user' => 'App\GraphQL\Query\UsersQuery'
-        ],
+'components'=>[
+    'graphql'=>[
+       'class'=>'xxx\xxxx\module'
+       //主graphql协议配置
+       'schemas' => [        
+          'query' => [
+              'user' => 'App\GraphQL\Query\UsersQuery'
+          ],
+        ]
         'mutation' => [
 
         ],
@@ -53,9 +54,14 @@ retrun [
         'types'=>[
             'user'=>'app\modules\graph\type\UserType'
         ],
-    ],
-    'cache'=>'cache',//缓存key,默认采用系统的缓存配置,但实际中一般采用本机文件缓存
+    ],    
 ];
+```
+当采用module方式时，接收请求的controller可以继承组件提供的控制器基类
+```php
+class xxxController extends GraphQLController{
+   //默认的action为index，在自定义的控制器中可自己完善如授权OAUTH之类的控制
+}
 ```
 
 在采用动态解析的情况下,如果不想定义types时,schema的写法有讲究.可采用Type::class,避免采用Key方式,也方便直接通过IDE导航到对应的类下

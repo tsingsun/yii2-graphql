@@ -1,6 +1,5 @@
 <?php
 
-use Yii;
 /**
  * Created by PhpStorm.
  * User: tsingsun
@@ -19,7 +18,7 @@ class DefaultControllerTest extends \yiiunit\extensions\graphql\TestCase
         $_GET = [
             'query'=> $this->queries['hello'],
         ];
-        $dc = new \yii\graphql\controllers\DefaultController('default',Yii::$app->getModule('graphql'));
+        $dc = Yii::$app->controller = new \yiiunit\extensions\graphql\DefaultController('default',Yii::$app->getModule('graphql'));
         $result = $dc->ActionIndex();
         $this->assertArrayHasKey('data',$result);
     }

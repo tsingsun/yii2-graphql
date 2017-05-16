@@ -64,16 +64,8 @@ class ActiveRecordType
      */
     public function toType()
     {
-//        $graphql = GraphQL::getModule()->getGraphQL();
-        $cache = GraphQL::getModule()->getCache();
         $name = $this->getName();
-
-        if ($fields = $cache->get($name)) {
-            $this->fields = $fields;
-        } else {
-            $this->schemaFields();
-            $cache->set($name, $this->fields);
-        }
+        $this->schemaFields();
 
         if (method_exists($this->model, 'graphqlFields')) {
             $this->modelDefinedFields($this->model->graphqlFields());

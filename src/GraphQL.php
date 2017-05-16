@@ -32,44 +32,42 @@ use yii\graphql\exception\TypeNotFound;
 use yii\helpers\ArrayHelper;
 
 /**
- * the Graphql facade
+ * GraphQL门面类，在每个Module的使用中，graphql都是独立的，没有采用单例的方式，因为具有与Module实例有一定的耦合，这是合理的。
  * @package yii\graphql
  */
 class GraphQL
 {
     /**
-     * @var Module
+     * @var array query类型配置信息
      */
-    protected static $module;
     public $queries = [];
+    /**
+     * @var array mutation类型的配置信息
+     */
     public $mutations = [];
-//    protected $schemas = [];
+    /**
+     * @var array type类型的配置信息
+     */
     public $types = [];
+
     protected $typesInstances = [];
 
     /**
-     * @return null|Module
-     */
-    public static function getModule(){
-        if(!self::$module){
-            self::$module = Yii::$app->getModule('graphql');
-        }
-        return self::$module;
-    }
-    /**
-     * Generate GraphQL Schema.
-     * @param null $schema
-     * @return array|Schema|null|string in common condition,it will be null,add it is easy to unit test
-     * @throws SchemaNotFound
-     * @throws TypeNotFound
+     * 接收schema数据，并入的配置信息
+     *
+     * 数组格式：
+     * $schema = new [
+     *   'query'=>[
+     *      //配置节点为该$key指向的类型，mutation,types也是如此
+     *      'hello'=>HelloQuery::class
+     *   ],
+     *   'mutation'=>[],
+     *   'types'=>[],
+     * ];
+     * @param null|array $schema 配置数组,该数组会导入对象自身的配置持久化下来
      */
     public function schema($schema = null)
     {
-        $beginTime = microtime(true);
-        if ($schema instanceof Schema) {
-            return $schema;
-        }
-
         if(is_array($schema)){
             $schemaQuery = ArrayHelper::getValue($schema, 'query', []);
             $schemaMutation = ArrayHelper::getValue($schema, 'mutation', []);
@@ -78,15 +76,22 @@ class GraphQL
             $this->mutations += $schemaMutation;
             $this->types += $schemaTypes;
         }
-
-        $result = $this->buildSchema($this->queries,$this->mutations,$this->types);
-
-        $duringTime = microtime(true)-$beginTime;
-        Yii::trace("parse schema during : {$duringTime} second");
-        return $result;
     }
 
-    private function buildSchema($schemaQuery,$schemaMutation,$schemaTypes){
+    /**
+     * 根据输入构建GraphQl Schema
+     * @param Schema|array $schema schema数据
+     * @return Schema
+     */
+    public function buildSchema($schema = null){
+        if($schema instanceof Schema){
+            return $schema;
+        }
+        if($schema === null){
+            list($schemaQuery,$schemaMutation,$schemaTypes) = [$this->queries,$this->mutations,$this->types];
+        }else{
+            list($schemaQuery,$schemaMutation,$schemaTypes) = $schema;
+        }
         $types = [];
         if (sizeof($schemaTypes)) {
             foreach ($schemaTypes as $name => $type) {
@@ -108,7 +113,7 @@ class GraphQL
     }
 
     /**
-     * generate ObjectType instance
+     * 获取指定类型GraphQL的ObjectType实例
      * @param $type
      * @param array $opts
      * @return ObjectType|null
@@ -140,7 +145,7 @@ class GraphQL
 
     /**
      * build ObjectType from classname  config
-     * @param $type
+     * @param Object|array $type 能够转换为ObjectType的类实例或者类配置
      * @param array $opts
      * @return object
      * @throws InvalidConfigException
@@ -154,15 +159,12 @@ class GraphQL
         foreach ($opts as $key => $value) {
             $type->{$key} = $value;
         }
-        foreach ($opts as $key => $value) {
-            $type->{$key} = $value;
-        }
 
         return $type->toType();
     }
 
     /**
-     * build ObjectType from array config
+     * 通过graphql声明配置构建GraphQL ObjectType
      * @param array $fields use standard graphql declare.
      * @param array $opts
      * @return ObjectType
@@ -191,6 +193,7 @@ class GraphQL
 
 
     /**
+     * 查询入口，主要通过该方法返回数据
      * @param $query
      * @param null $rootValue
      * @param null $contextValue
@@ -217,6 +220,7 @@ class GraphQL
         return $return;
     }
     /**
+     * 内部查询入口，该方法返回GraphQL处理类的数据
      * @param $query
      * @param null $rootValue
      * @param null $contextValue
@@ -254,7 +258,7 @@ class GraphQL
                     }
                 }
             }
-            $schema = $this->buildSchema($queryTypes,$mutation,$types);
+            $schema = $this->buildSchema([$queryTypes,$mutation,$types]);
 
             /** @var QueryComplexity $queryComplexity */
             $queryComplexity = DocumentValidator::getRule('QueryComplexity');
@@ -273,12 +277,15 @@ class GraphQL
     }
 
     /**
-     * static method for getType
+     * 通过名称获取GraphQL的类型系统实例
      * @param $name
      * @return mixed
      */
     public static function type($name){
-        $gql = self::getModule()->getGraphQL();
+        /** @var GraphQLModuleTrait $module */
+        $module = Yii::$app->controller ? Yii::$app->controller->module : Yii::$app->getModule('graphql');
+        $gql = $module->getGraphQL();
+
         return $gql->getType($name);
     }
 

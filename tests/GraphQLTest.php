@@ -44,7 +44,7 @@ class GraphQLTest extends TestCase
      */
     public function testSchema()
     {
-        $schema = $this->graphql->schema();
+        $schema = $this->graphql->buildSchema();
 
         $this->assertGraphQLSchema($schema);
         $this->assertGraphQLSchemaHasQuery($schema, 'stories');
@@ -68,7 +68,7 @@ class GraphQLTest extends TestCase
             ]),
             'types' => []
         ]);
-        $schema = $this->graphql->schema($schemaObject);
+        $schema = $this->graphql->buildSchema($schemaObject);
 
         $this->assertGraphQLSchema($schema);
         $this->assertEquals($schemaObject, $schema);
@@ -82,7 +82,7 @@ class GraphQLTest extends TestCase
      */
     public function testSchemaWithWrongName()
     {
-        $schema = $this->graphql->schema('wrong');
+        $schema = $this->graphql->buildSchema('wrong');
     }
 
     /**

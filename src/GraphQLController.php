@@ -6,13 +6,13 @@
  * Time: 上午11:46
  */
 
-namespace yii\graphql\controllers;
+namespace yii\graphql;
 
 use Yii;
 use yii\graphql\GraphQL;
-use yii\web\Controller;
+use yii\base\Controller;
 
-class DefaultController extends Controller
+class GraphQLController extends Controller
 {
     /**
      * @var GraphQL
@@ -31,8 +31,9 @@ class DefaultController extends Controller
         if (is_string($params)){
             $params = json_decode($params,true);
         }
-
-        $this->graphQL = $this->module->getGraphQL();
+        /** @var GraphQLModuleTrait $module */
+        $module = $this->module;
+        $this->graphQL = $module->getGraphQL();
 
         $result = $this->graphQL->query($query,null,Yii::$app,$params);
 
