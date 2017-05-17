@@ -10,8 +10,6 @@ namespace yii\graphql;
 
 use Yii;
 use GraphQL\Type\Definition\Config;
-use yii\base\BootstrapInterface;
-use yii\caching\Cache;
 
 /**
  * graph特性类，一般是辅助Module类，初始化GraphQl
@@ -20,7 +18,7 @@ use yii\caching\Cache;
 trait GraphQLModuleTrait
 {
     /**
-     * // The schemas for query and/or mutation. It expects an array to provide
+     * The schemas for query and/or mutation. It expects an array to provide
      * both the 'query' fields and the 'mutation' fields. You can also
      * provide directly an object GraphQL\Schema
      *
@@ -40,7 +38,7 @@ trait GraphQLModuleTrait
      *
      * @var array
      */
-    public $schemas = [];
+    public $schema = [];
 
     /**
      * @var GraphQL the Graph handle
@@ -48,19 +46,17 @@ trait GraphQLModuleTrait
     private $graphQL;
 
     /**
-     * 启用webonyx graphql config的验证
+     * @var callable if don't set error formatter,it will use php-graphql default
+     * @see \GraphQL\Executor\ExecutionResult
+     */
+    public $errorFormatter;
+
+    /**
+     * webonyx graphql config validation for debug
      */
     public function enableValidation()
     {
         Config::enableValidation();
-    }
-
-    /**
-     * 构建Schema数据，一般不需要提前构建，系统可以按需构建schema
-     */
-    public function buildSchema()
-    {
-        $this->getGraphQL()->buildSchema();
     }
 
     /**
@@ -70,7 +66,10 @@ trait GraphQLModuleTrait
     public function getGraphQL(){
         if($this->graphQL == null){
             $this->graphQL = new GraphQL();
-            $this->graphQL->schema($this->schemas);
+            $this->graphQL->schema($this->schema);
+            if($this->errorFormatter){
+                $this->graphQL->setErrorFormatter($this->errorFormatter);
+            }
         }
         return $this->graphQL;
     }

@@ -13,7 +13,6 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use yii\db\ActiveRecord;
 use yii\db\ColumnSchema;
-use yii\graphql\GraphQL;
 
 /**
  * for activeRecord transfer to ObjectType
@@ -87,7 +86,6 @@ class ActiveRecordType
      * Convert ActiveRecord instance defined fields method named 'graphqlFields' .
      *
      * @param array $fields
-     * @return array
      */
     public function modelDefinedFields($fields)
     {
@@ -187,7 +185,7 @@ class ActiveRecordType
      * Check if model has resolve function.
      *
      * @param  string  $key
-     * @return string|null
+     * @return array|null
      */
     protected function getModelResolve($key)
     {

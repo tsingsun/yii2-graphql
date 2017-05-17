@@ -44,16 +44,15 @@ PS:对于graphql的一些特殊语法,像参数语法,接口语法,内置指令�
        //主graphql协议配置
        'schemas' => [        
           'query' => [
-              'user' => 'App\GraphQL\Query\UsersQuery'
+              'user' => 'app\graphql\query\UsersQuery'
           ],
-        ]
-        'mutation' => [
-
-        ],
-        //
-        'types'=>[
-            'user'=>'app\modules\graph\type\UserType'
-        ],
+          'mutation' => [
+              'login'
+          ],
+          //types一般不需要进行配置，当有特殊类型时
+          'types'=>[
+          ],
+        ]                
     ],    
 ];
 ```

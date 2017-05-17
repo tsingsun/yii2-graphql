@@ -11,6 +11,7 @@ namespace yii\graphql;
 use GraphQL\Error;
 use GraphQL\Executor\ExecutionResult;
 use GraphQL\Executor\Executor;
+use GraphQL\Executor\Promise\Promise;
 use GraphQL\Language\AST\NameNode;
 use GraphQL\Language\AST\OperationDefinitionNode;
 use GraphQL\Language\Parser;
@@ -27,7 +28,6 @@ use yii\db\ActiveRecord;
 use yii\graphql\base\ActiveRecordType;
 use yii\graphql\base\GraphQLField;
 use yii\graphql\base\GraphQLType;
-use yii\graphql\exception\SchemaNotFound;
 use yii\graphql\exception\TypeNotFound;
 use yii\helpers\ArrayHelper;
 
@@ -52,6 +52,8 @@ class GraphQL
 
     protected $typesInstances = [];
 
+    public $errorFormatter;
+
     /**
      * 接收schema数据，并入的配置信息
      *
@@ -68,7 +70,7 @@ class GraphQL
      */
     public function schema($schema = null)
     {
-        if(is_array($schema)){
+        if (is_array($schema)) {
             $schemaQuery = ArrayHelper::getValue($schema, 'query', []);
             $schemaMutation = ArrayHelper::getValue($schema, 'mutation', []);
             $schemaTypes = ArrayHelper::getValue($schema, 'types', []);
@@ -79,18 +81,20 @@ class GraphQL
     }
 
     /**
-     * 根据输入构建GraphQl Schema
+     * 根据输入构建GraphQl Schema,特别注意，由于在构建ObjectType的过程中需要用到Module及Controller,该方法的执行位置受到一定程度的限制
+     * 建立是在Controller中执行
      * @param Schema|array $schema schema数据
      * @return Schema
      */
-    public function buildSchema($schema = null){
-        if($schema instanceof Schema){
+    public function buildSchema($schema = null)
+    {
+        if ($schema instanceof Schema) {
             return $schema;
         }
-        if($schema === null){
-            list($schemaQuery,$schemaMutation,$schemaTypes) = [$this->queries,$this->mutations,$this->types];
-        }else{
-            list($schemaQuery,$schemaMutation,$schemaTypes) = $schema;
+        if ($schema === null) {
+            list($schemaQuery, $schemaMutation, $schemaTypes) = [$this->queries, $this->mutations, $this->types];
+        } else {
+            list($schemaQuery, $schemaMutation, $schemaTypes) = $schema;
         }
         $types = [];
         if (sizeof($schemaTypes)) {
@@ -176,11 +180,11 @@ class GraphQL
         foreach ($fields as $name => $field) {
             if (is_string($field)) {
                 $field = Yii::createObject($field);
-                $name = is_numeric($name) ? $field->name:$name;
+                $name = is_numeric($name) ? $field->name : $name;
                 $field->name = $name;
                 $field = $field->toArray();
             } else {
-                $name = is_numeric($name) ? $field['name']:$name;
+                $name = is_numeric($name) ? $field['name'] : $name;
                 $field['name'] = $name;
             }
             $typeFields[$name] = $field;
@@ -201,24 +205,27 @@ class GraphQL
      * @param string $operationName
      * @return array
      */
-    public function query($query,$rootValue = null,$contextValue = null,$variableValues = null,$operationName = ''){
-        $result = $this->queryAndReturnResult($query,$rootValue,$contextValue,$variableValues,$operationName);
+    public function query($query, $rootValue = null, $contextValue = null, $variableValues = null, $operationName = '')
+    {
+        $result = $this->queryAndReturnResult($query, $rootValue, $contextValue, $variableValues, $operationName);
 
-        $return = [];
-        if (null !== $result->data) {
-            $return['data'] = $result->data;
+        if ($result instanceof ExecutionResult) {
+            if ($this->errorFormatter) {
+                $result->setErrorFormatter($this->errorFormatter);
+            }
+            return $result->toArray();
+        } elseif ($result instanceof Promise) {
+            return $result->then(function (ExecutionResult $executionResult) {
+                if ($this->errorFormatter) {
+                    $executionResult->setErrorFormatter($this->errorFormatter);
+                }
+                return $executionResult->toArray();
+            });
+        } else {
+            throw new Error\InvariantViolation("Unexpected execution result");
         }
-
-        if (!empty($this->errors)) {
-            $return['errors'] = array_map([$this, 'formatError'], $result->errors);
-        }
-
-        if (!empty($this->extensions)) {
-            $return['extensions'] = (array) $result->extensions;
-        }
-
-        return $return;
     }
+
     /**
      * 内部查询入口，该方法返回GraphQL处理类的数据
      * @param $query
@@ -228,29 +235,35 @@ class GraphQL
      * @param string $operationName
      * @return ExecutionResult
      */
-    public function queryAndReturnResult($query,$rootValue = null,$contextValue = null,$variableValues = null,$operationName = ''){
-        try{
+    public function queryAndReturnResult($query, $rootValue = null, $contextValue = null, $variableValues = null, $operationName = '')
+    {
+        try {
             $source = new Source($query ?: '', 'GraphQL request');
             $documentNode = Parser::parse($source);
             //TODO mutation parse is not add
             $queryTypes = [];
             $mutation = [];
             $types = [];
-            foreach($documentNode->definitions as $definition){
-                if($definition instanceof OperationDefinitionNode){
+            $isAll = false;
+            foreach ($documentNode->definitions as $definition) {
+                if ($definition instanceof OperationDefinitionNode) {
                     $selections = $definition->selectionSet->selections;
-                    foreach($selections as $selection){
+                    foreach ($selections as $selection) {
                         $node = $selection->name;
-                        if($node instanceof NameNode){
-                            if($definition->operation == 'query'){
-                                if(isset($this->queries[$node->value])){
+                        if ($node instanceof NameNode) {
+                            if ($definition->operation == 'query') {
+                                if ($definition->name && $definition->name->value == 'IntrospectionQuery') {
+                                    $isAll = true;
+                                    break 2;
+                                }
+                                if (isset($this->queries[$node->value])) {
                                     $queryTypes[$node->value] = $this->queries[$node->value];
                                 }
-                                if(isset($this->types[$node->value])){
+                                if (isset($this->types[$node->value])) {
                                     $types[$node->value] = $this->types[$node->value];
                                 }
-                            }elseif($definition->operation == 'mutation'){
-                                if(isset($this->mutations[$node->value])){
+                            } elseif ($definition->operation == 'mutation') {
+                                if (isset($this->mutations[$node->value])) {
                                     $mutation[$node->value] = $this->mutations[$node->value];
                                 }
                             }
@@ -258,7 +271,7 @@ class GraphQL
                     }
                 }
             }
-            $schema = $this->buildSchema([$queryTypes,$mutation,$types]);
+            $schema = $isAll ? $this->buildSchema() : $this->buildSchema([$queryTypes, $mutation, $types]);
 
             /** @var QueryComplexity $queryComplexity */
             $queryComplexity = DocumentValidator::getRule('QueryComplexity');
@@ -271,8 +284,8 @@ class GraphQL
             } else {
                 return Executor::execute($schema, $documentNode, $rootValue, $contextValue, $variableValues, $operationName);
             }
-        }catch(Error\Error $e){
-
+        } catch (Error\Error $e) {
+            return new ExecutionResult(null, [$e]);
         }
     }
 
@@ -281,7 +294,8 @@ class GraphQL
      * @param $name
      * @return mixed
      */
-    public static function type($name){
+    public static function type($name)
+    {
         /** @var GraphQLModuleTrait $module */
         $module = Yii::$app->controller ? Yii::$app->controller->module : Yii::$app->getModule('graphql');
         $gql = $module->getGraphQL();
@@ -301,15 +315,15 @@ class GraphQL
         if (isset($this->types[$name])) {
             $class = $this->types[$name];
 
-            if(is_object($class)){
+            if (is_object($class)) {
                 return $class;
             }
         }
 
         //class is string or not found;
 
-        if(strpos($class,'\\')!==false && !class_exists($class)){
-            throw new TypeNotFound('Type '.$name.' not found.');
+        if (strpos($class, '\\') !== false && !class_exists($class)) {
+            throw new TypeNotFound('Type ' . $name . ' not found.');
         }
         $type = $this->buildType($class);
         $this->types[$name] = $type;
@@ -330,17 +344,17 @@ class GraphQL
             $type = Yii::createObject($type);
         }
 
-        if($type instanceof GraphQLType){
+        if ($type instanceof GraphQLType) {
             //transfer ObjectType
             return $type->toType();
-        }elseif($type instanceof GraphQLField){
+        } elseif ($type instanceof GraphQLField) {
             //field is not need transfer to ObjectType,it just need config array
             return $type;
-        }elseif($type instanceof ActiveRecord){
+        } elseif ($type instanceof ActiveRecord) {
             //transfer ObjectType
             $type = new ActiveRecordType($type);
             return $type->toType();
-        }elseif($type instanceof Type){
+        } elseif ($type instanceof Type) {
             return $type;
         }
 
@@ -355,8 +369,6 @@ class GraphQL
     {
         $name = $this->getTypeName($class, $name);
         $this->types[$name] = $class;
-
-//        event(new TypeAdded($class, $name));
     }
 
     /**
@@ -372,28 +384,16 @@ class GraphQL
             return $name;
         }
 
-        $type = is_object($class) ? $class:Yii::createObject($class);
+        $type = is_object($class) ? $class : Yii::createObject($class);
         return $type->name;
     }
 
-    public static function formatError(Error\Error $e)
+    /**
+     * set error formatter
+     * @param $errorFormatter
+     */
+    public function setErrorFormatter(callable $errorFormatter)
     {
-        $error = [
-            'message' => $e->getMessage()
-        ];
-
-        $locations = $e->getLocations();
-        if (!empty($locations)) {
-            $error['locations'] = array_map(function ($loc) {
-                return $loc->toArray();
-            }, $locations);
-        }
-
-        $previous = $e->getPrevious();
-        if ($previous && $previous instanceof ValidationError) {
-            $error['validation'] = $previous->getValidatorMessages();
-        }
-
-        return $error;
+        $this->errorFormatter = $errorFormatter;
     }
 }

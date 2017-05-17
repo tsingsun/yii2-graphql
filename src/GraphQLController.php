@@ -9,8 +9,9 @@
 namespace yii\graphql;
 
 use Yii;
-use yii\graphql\GraphQL;
+use yii\base\InvalidParamException;
 use yii\base\Controller;
+use yii\web\Response;
 
 class GraphQLController extends Controller
 {
@@ -21,22 +22,32 @@ class GraphQLController extends Controller
 
     public function actionIndex(){
         $request = Yii::$app->getRequest();
-        $query = $request->get('query');
-        $params = $request->get('variables');
-        if(!$query){
-            //TODO not get http method have to parse content
-            $query = $request->getBodyParams();
+        if ($request->isGet) {
+            $query = $request->get('query');
+            $variables = $request->get('variables');
+        } else {
+            $body = $request->getBodyParams();
+            $query = $body['query']??$body;
+            $variables = $body['variables']??[];
+        }
+        if (empty($query)) {
+            throw new InvalidParamException('invalid query,query document not found');
         }
 
-        if (is_string($params)){
-            $params = json_decode($params,true);
+        if (is_string($variables)){
+            $variables = json_decode($variables,true);
         }
         /** @var GraphQLModuleTrait $module */
         $module = $this->module;
         $this->graphQL = $module->getGraphQL();
+        if(YII_DEBUG){
+            //调度状态下将执行构建查询
+            $module->enableValidation();
+//            $this->graphQL->buildSchema();
 
-        $result = $this->graphQL->query($query,null,Yii::$app,$params);
-
+        }
+        $result = $this->graphQL->query($query,null,Yii::$app,$variables);
+        Yii::$app->response->format = Response::FORMAT_JSON;
         return $result;
 
     }

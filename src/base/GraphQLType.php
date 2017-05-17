@@ -118,7 +118,7 @@ class GraphQLType extends Fluent
     /**
      * Convert this class to its ObjectType.
      *
-     * @return ObjectType
+     * @return ObjectType |InputObjectType
      */
     public function toType()
     {
