@@ -2,8 +2,9 @@
 namespace yiiunit\extensions\graphql\data;
 
 use GraphQL\Utils;
+use yii\web\IdentityInterface;
 
-class User
+class User implements IdentityInterface
 {
     public $id;
 
@@ -21,4 +22,31 @@ class User
     {
         Utils::assign($this, $data);
     }
+
+    public static function findIdentity($id)
+    {
+        return DataSource::findUser($id);
+    }
+
+    public static function findIdentityByAccessToken($token, $type = null)
+    {
+        return DataSource::findUser(1);
+    }
+
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    public function getAuthKey()
+    {
+        // TODO: Implement getAuthKey() method.
+    }
+
+    public function validateAuthKey($authKey)
+    {
+        // TODO: Implement validateAuthKey() method.
+    }
+
+
 }

@@ -5,7 +5,6 @@ namespace yiiunit\extensions\graphql;
 use GraphQL\Type\Definition\Config;
 use Yii;
 use yii\di\Container;
-use yii\graphql\GraphQLModuleTraits;
 use yii\helpers\ArrayHelper;
 use yiiunit\extensions\graphql\data\DataSource;
 use yiiunit\extensions\graphql\objects\mutation\UpdateUserPwdMutation;
@@ -78,12 +77,16 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
                     'password' => '',
                     'charset' => 'utf8',
                 ],
+                'user' => [
+                    'class' => 'yii\web\User',
+                    'identityClass' => 'yiiunit\extensions\graphql\data\User'
+                ],
 
             ],
             'modules' => [
                 'graphql' => [
                     'class' => Module::class,
-                    'schemas' => [
+                    'schema' => [
                         'query' => [
                             'hello' => HelloQuery::class,
                             'user' => UserQuery::class,

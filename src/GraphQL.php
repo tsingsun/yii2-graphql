@@ -54,6 +54,8 @@ class GraphQL
 
     public $errorFormatter;
 
+    private $currentDocument;
+
     /**
      * 接收schema数据，并入的配置信息
      *
@@ -195,27 +197,40 @@ class GraphQL
         ], $opts));
     }
 
-
     /**
      * 查询入口，主要通过该方法返回数据
-     * @param $query
+     * @param $requestString
      * @param null $rootValue
      * @param null $contextValue
      * @param null $variableValues
      * @param string $operationName
-     * @return array
+     * @return array|Error\InvariantViolation
      */
-    public function query($query, $rootValue = null, $contextValue = null, $variableValues = null, $operationName = '')
+    public function query($requestString, $rootValue = null, $contextValue = null, $variableValues = null, $operationName = '')
     {
-        $result = $this->queryAndReturnResult($query, $rootValue, $contextValue, $variableValues, $operationName);
+        $sl = $this->parseRequestQuery($requestString);
+        if ($sl === true) {
+            $sl = [$this->queries, $this->mutations, $this->types];
+        }
+        $schema = $this->buildSchema($sl);
 
-        if ($result instanceof ExecutionResult) {
+        $val = $this->execute($schema, $rootValue, $contextValue, $variableValues, $operationName);
+        return $this->getResult($val);
+    }
+
+    /**
+     * @param $executeResult
+     * @return array|Promise
+     */
+    public function getResult($executeResult)
+    {
+        if ($executeResult instanceof ExecutionResult) {
             if ($this->errorFormatter) {
-                $result->setErrorFormatter($this->errorFormatter);
+                $executeResult->setErrorFormatter($this->errorFormatter);
             }
-            return $result->toArray();
-        } elseif ($result instanceof Promise) {
-            return $result->then(function (ExecutionResult $executionResult) {
+            return $executeResult->toArray();
+        } elseif ($executeResult instanceof Promise) {
+            return $executeResult->then(function (ExecutionResult $executionResult) {
                 if ($this->errorFormatter) {
                     $executionResult->setErrorFormatter($this->errorFormatter);
                 }
@@ -227,66 +242,74 @@ class GraphQL
     }
 
     /**
-     * 内部查询入口，该方法返回GraphQL处理类的数据
-     * @param $query
-     * @param null $rootValue
-     * @param null $contextValue
-     * @param null $variableValues
-     * @param string $operationName
-     * @return ExecutionResult
+     * 根据schema执行查询，这个方法需要在生成schema后执行
+     * @param $schema
+     * @param $rootValue
+     * @param $contextValue
+     * @param $variableValues
+     * @param $operationName
+     * @return ExecutionResult|Promise
      */
-    public function queryAndReturnResult($query, $rootValue = null, $contextValue = null, $variableValues = null, $operationName = '')
+    public function execute($schema, $rootValue, $contextValue, $variableValues, $operationName)
     {
         try {
-            $source = new Source($query ?: '', 'GraphQL request');
-            $documentNode = Parser::parse($source);
-            //TODO mutation parse is not add
-            $queryTypes = [];
-            $mutation = [];
-            $types = [];
-            $isAll = false;
-            foreach ($documentNode->definitions as $definition) {
-                if ($definition instanceof OperationDefinitionNode) {
-                    $selections = $definition->selectionSet->selections;
-                    foreach ($selections as $selection) {
-                        $node = $selection->name;
-                        if ($node instanceof NameNode) {
-                            if ($definition->operation == 'query') {
-                                if ($definition->name && $definition->name->value == 'IntrospectionQuery') {
-                                    $isAll = true;
-                                    break 2;
-                                }
-                                if (isset($this->queries[$node->value])) {
-                                    $queryTypes[$node->value] = $this->queries[$node->value];
-                                }
-                                if (isset($this->types[$node->value])) {
-                                    $types[$node->value] = $this->types[$node->value];
-                                }
-                            } elseif ($definition->operation == 'mutation') {
-                                if (isset($this->mutations[$node->value])) {
-                                    $mutation[$node->value] = $this->mutations[$node->value];
-                                }
+            /** @var QueryComplexity $queryComplexity */
+            $queryComplexity = DocumentValidator::getRule('QueryComplexity');
+            $queryComplexity->setRawVariableValues($variableValues);
+
+            $validationErrors = DocumentValidator::validate($schema, $this->currentDocument);
+
+            if (!empty($validationErrors)) {
+                return new ExecutionResult(null, $validationErrors);
+            }
+            return Executor::execute($schema, $this->currentDocument, $rootValue, $contextValue, $variableValues, $operationName);
+        } catch (Error\Error $e) {
+            return new ExecutionResult(null, [$e]);
+        } finally {
+            $this->currentDocument = null;
+        }
+    }
+
+    /**
+     * 将查询请求转换为可以转换为schema方法的数组
+     * @param $requestString
+     * @return array|bool 数组元素为0：query,1:mutation,2:types,当返回true时，表示为IntrospectionQuery
+     */
+    public function parseRequestQuery($requestString)
+    {
+        $source = new Source($requestString ?: '', 'GraphQL request');
+        $this->currentDocument = Parser::parse($source);
+        $queryTypes = [];
+        $mutation = [];
+        $types = [];
+        $isAll = false;
+        foreach ($this->currentDocument->definitions as $definition) {
+            if ($definition instanceof OperationDefinitionNode) {
+                $selections = $definition->selectionSet->selections;
+                foreach ($selections as $selection) {
+                    $node = $selection->name;
+                    if ($node instanceof NameNode) {
+                        if ($definition->operation == 'query') {
+                            if ($definition->name && $definition->name->value == 'IntrospectionQuery') {
+                                $isAll = true;
+                                break 2;
+                            }
+                            if (isset($this->queries[$node->value])) {
+                                $queryTypes[$node->value] = $this->queries[$node->value];
+                            }
+                            if (isset($this->types[$node->value])) {
+                                $types[$node->value] = $this->types[$node->value];
+                            }
+                        } elseif ($definition->operation == 'mutation') {
+                            if (isset($this->mutations[$node->value])) {
+                                $mutation[$node->value] = $this->mutations[$node->value];
                             }
                         }
                     }
                 }
             }
-            $schema = $isAll ? $this->buildSchema() : $this->buildSchema([$queryTypes, $mutation, $types]);
-
-            /** @var QueryComplexity $queryComplexity */
-            $queryComplexity = DocumentValidator::getRule('QueryComplexity');
-            $queryComplexity->setRawVariableValues($variableValues);
-
-            $validationErrors = DocumentValidator::validate($schema, $documentNode);
-
-            if (!empty($validationErrors)) {
-                return new ExecutionResult(null, $validationErrors);
-            } else {
-                return Executor::execute($schema, $documentNode, $rootValue, $contextValue, $variableValues, $operationName);
-            }
-        } catch (Error\Error $e) {
-            return new ExecutionResult(null, [$e]);
         }
+        return $isAll ?: [$queryTypes, $mutation, $types];
     }
 
     /**

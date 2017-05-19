@@ -28,46 +28,6 @@ PS:对于graphql的一些特殊语法,像参数语法,接口语法,内置指令�
 }
 ```
 
-### 在YII使用 ###
-
-本组件采用trait的方式在Component组件中被引入，组件宿主建议的方式是Module
-```php
-     class Module extends Module{
-        use GraphQLModuleTrait;
-     }
-```
-配置文件
-```php
-'components'=>[
-    'graphql'=>[
-       'class'=>'xxx\xxxx\module'
-       //主graphql协议配置
-       'schemas' => [        
-          'query' => [
-              'user' => 'app\graphql\query\UsersQuery'
-          ],
-          'mutation' => [
-              'login'
-          ],
-          //types一般不需要进行配置，当有特殊类型时
-          'types'=>[
-          ],
-        ]                
-    ],    
-];
-```
-当采用module方式时，接收请求的controller可以继承组件提供的控制器基类
-```php
-class xxxController extends GraphQLController{
-   //默认的action为index，在自定义的控制器中可自己完善如授权OAUTH之类的控制
-}
-```
-
-在采用动态解析的情况下,如果不想定义types时,schema的写法有讲究.可采用Type::class,避免采用Key方式,也方便直接通过IDE导航到对应的类下
-```php
-    'type'=>GraphQL::type(UserType::class)
-```
-
 ### Type ###
 类型系统是GraphQL的核心,体现在GraphQLType中,通过解构graphql协议,并利用graph-php库达到细粒度的对所有元素的控制,方便根据自身需要进行类扩展.
 
@@ -109,7 +69,75 @@ resolve | callback | **function($value, $args, $context, GraphQL\Type\Definition
     'id'=>type::id()
 ```
 
+### 在YII使用 ###
 
+本组件采用trait的方式在Component组件中被引入，组件宿主建议的方式是Module
+```php
+     class Module extends Module{
+        use GraphQLModuleTrait;
+     }
+```
+配置文件
+```php
+'components'=>[
+    'graphql'=>[
+       'class'=>'xxx\xxxx\module'
+       //主graphql协议配置
+       'schemas' => [        
+          'query' => [
+              'user' => 'app\graphql\query\UsersQuery'
+          ],
+          'mutation' => [
+              'login'
+          ],
+          //types一般不需要进行配置，当有特殊类型时
+          'types'=>[
+          ],
+        ]                
+    ],    
+];
+```
+采用的是actions的方法进行集成
+```php
+class xxxController extends Controller{
+   function actions()
+   {
+       return [
+            'index'=>[
+                'class'=>'yii\graphql\GraphQLAction'
+            ]
+       ];
+   }
+}
+```
+
+在采用动态解析的情况下,如果不想定义types时,schema的写法有讲究.可采用Type::class,避免采用Key方式,也方便直接通过IDE导航到对应的类下
+```php
+    'type'=>GraphQL::type(UserType::class)
+```
+
+### 授权验证
+
+由于graphql查询是可以采用组合方式，如一次查询合并了两个query，而这两个query具有不同的授权约束，因此在graph中需要采用自定义的验证方式。
+我把这多次查询查询称为graphql actions;当所有的graphql actions条件都满足配置时，才通过授权检查。
+
+#### 授权
+在controller的行为方法中设置采用的授权方法,例子如下，
+```php
+function behaviors()
+{
+    return [
+        'authenticator'=>[
+            'class'=>'yii\graphql\filter\auth\CompositeAuth',
+            'authMethods'=>[
+                \yii\filters\auth\QueryParamAuth::className(),
+            ],
+            'except'=>['hello']
+        ],
+    ];
+}
+```
+如果要支持IntrospectionQueryr的授权，相应的graphql action为"__schema"
 
 ### Demo ###
 

@@ -2,18 +2,11 @@
 
 namespace yiiunit\extensions\graphql;
 
-use GraphQL\GraphQL as GraphQLBase;
 use GraphQL\Schema;
 use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\Type;
-use GraphQL\Error;
 use yii\graphql\exception\SchemaNotFound;
 use yii\graphql\GraphQL;
-use yiiunit\extensions\graphql\objects\CustomExampleType;
-use yiiunit\extensions\graphql\objects\ExamplesQuery;
 use yiiunit\extensions\graphql\objects\types\ExampleType;
-use yiiunit\extensions\graphql\objects\types\UserType;
-use yiiunit\extensions\graphql\objects\UpdateExampleMutation;
 
 /**
  * Created by PhpStorm.
@@ -98,5 +91,12 @@ class GraphQLTest extends TestCase
         $typeOther = GraphQL::type('example');
         $this->assertFalse($type === $typeOther);
 
+    }
+
+    public function testParseRequestQuery()
+    {
+        $query = $this->queries['multiQuery'];
+        $ret = $this->graphql->parseRequestQuery($query);
+        $this->assertNotEmpty($ret);
     }
 }
