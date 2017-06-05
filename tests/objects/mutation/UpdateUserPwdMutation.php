@@ -12,6 +12,7 @@ namespace yiiunit\extensions\graphql\objects\mutation;
 use GraphQL\Type\Definition\Type;
 use yii\graphql\base\GraphQLMutation;
 use yii\graphql\GraphQL;
+use yiiunit\extensions\graphql\data\DataSource;
 use yiiunit\extensions\graphql\objects\models\UserModel;
 use yiiunit\extensions\graphql\objects\types\UserType;
 
@@ -23,7 +24,7 @@ class UpdateUserPwdMutation extends GraphQLMutation
 
     public function type()
     {
-        return GraphQL::type(UserModel::class);
+        return GraphQL::type(UserType::class);
     }
 
     public function args()
@@ -42,16 +43,22 @@ class UpdateUserPwdMutation extends GraphQLMutation
 
     public function resolve($root, $args)
     {
-        $user = UserModel::findOne($args['id']);
+        $user = DataSource::findUser($args['id']);
+
         if(!$user)
         {
             return null;
         }
 
         $user['password'] = md5($args['password']);
-        $user->save();
-
         return $user;
+    }
+
+    public function rules()
+    {
+        return [
+            ['password', 'boolean']
+        ];
     }
 
 }

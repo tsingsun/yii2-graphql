@@ -183,7 +183,7 @@ class GraphQL
             if (is_string($field)) {
                 $field = Yii::createObject($field);
                 $name = is_numeric($name) ? $field->name : $name;
-                $field->name = $name;
+                $field['name'] = $name;
                 $field = $field->toArray();
             } else {
                 $name = is_numeric($name) ? $field['name'] : $name;

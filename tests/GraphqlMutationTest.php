@@ -25,8 +25,14 @@ class GraphqlMutationTest extends TestCase
     }
 
     public function testUpdateUserPwd(){
-        $result = $this->graphQL->queryAndReturnResult($this->queries['updateObject'],null,\Yii::$app);
-        $this->assertObjectHasAttribute('data', $result);
-        $this->assertCount(0, $result->errors);
+        $result = $this->graphQL->query($this->queries['updateObject'], null, \Yii::$app);
+        $this->assertArrayHasKey('data', $result);
+        $this->assertArrayNotHasKey('errors', $result);
+    }
+
+    public function testValidator()
+    {
+        $result = $this->graphQL->query($this->queries['mutationValidate'], null, \Yii::$app);
+        $this->assertArrayHasKey('errors', $result);
     }
 }

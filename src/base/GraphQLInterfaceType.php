@@ -30,7 +30,7 @@ class GraphQLInterfaceType extends GraphQLType
      *
      * @return array
      */
-    public function getAttributes()
+    public function getAttributes($name = null, $except = null)
     {
         $attributes = parent::getAttributes();
 

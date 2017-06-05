@@ -18,6 +18,8 @@ class User implements IdentityInterface
 
     public $hasPhoto;
 
+    public $password;
+
     public function __construct(array $data)
     {
         Utils::assign($this, $data);

@@ -27,21 +27,24 @@ class DataSource
                 'email' => 'john@example.com',
                 'email2' => 'john2@example.com',
                 'firstName' => 'John',
-                'lastName' => 'Doe'
+                'lastName' => 'Doe',
+                'password' => '123456',
             ]),
             '2' => new User([
                 'id' => '2',
                 'email' => 'jane@example.com',
                 'email2' => 'john2@example.com',
                 'firstName' => 'Jane',
-                'lastName' => 'Doe'
+                'lastName' => 'Doe',
+                'password' => '123456',
             ]),
             '3' => new User([
                 'id' => '3',
                 'email' => 'john@example.com',
                 'email2' => 'john2@example.com',
                 'firstName' => 'John',
-                'lastName' => 'Doe'
+                'lastName' => 'Doe',
+                'password' => '123456',
             ]),
         ];
 

@@ -148,6 +148,14 @@ return [
             }
         }
     ",
+    'mutationValidate' => "
+        mutation updateUserPwd{
+            updateUserPwd(id: \"1001\",password: \"123456\") {
+                id,
+                email
+            }
+        }
+    ",
     'multiQuery' => "
         query hello{hello}
         query userModel{

@@ -1,29 +1,32 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: tsingsun
- * Date: 2016/11/15
- * Time: 上午9:53
- */
 
 namespace yii\graphql\base;
 
 
 use GraphQL\Type\Definition\FieldDefinition;
 use GraphQL\Type\Definition\ResolveInfo;
+use yii\base\Model;
 use yii\graphql\GraphQL;
+use yii\web\Application;
 
 /**
- * Class GraphQLField
+ * GraphQLField类对应于graphql描述文档中的类型系统中每一个节点.如
  *
+ * ```json
+ * type Person {
+ *   name: String
+ *   age: Int
+ *   picture: Url
+ *   relationship: Person
+ * }
+ * ```
+ * 每一个节点包括了name,type,args,description等
+ *
+ * @method resolve($root, $args, Application | object $context, ResolveInfo $info)
  * @package yii\graphql\base
  */
-class GraphQLField extends Fluent
+class GraphQLField extends GraphQLModel
 {
-    public function attributes()
-    {
-        return [];
-    }
 
     public function type()
     {
@@ -34,15 +37,6 @@ class GraphQLField extends Fluent
     {
         return [];
     }
-
-    /**
-     * @param $value
-     * @param $args
-     * @param $context
-     * @param ResolveInfo $info
-     * @return null child class override
-     */
-//    protected abstract function resolve($value, $args, $context, ResolveInfo $info);
 
     protected function getResolver()
     {
@@ -58,16 +52,18 @@ class GraphQLField extends Fluent
     }
 
     /**
-     * Get the attributes from the container.
+     * Get the graphql office's description format,that will be used for create GraphQL Object Type.
      *
+     * @param $name
+     * @param $except
      * @return array
      */
-    public function getAttributes()
+    public function getAttributes($name = null, $except = null)
     {
-        $attributes = $this->attributes();
+        $attributes = $this->attributes;
         $args = $this->args();
 
-        $attributes = array_merge($this->attributes, [
+        $attributes = array_merge([
             'args' => $args
         ], $attributes);
 

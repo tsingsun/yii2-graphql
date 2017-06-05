@@ -11,9 +11,10 @@ namespace yii\graphql\base;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use yii\base\DynamicModel;
 use yii\graphql\GraphQL;
 
-class GraphQLType extends Fluent
+class GraphQLType extends GraphQLModel
 {
     protected $inputObject = false;
 
@@ -48,6 +49,18 @@ class GraphQLType extends Fluent
         }
 
         return null;
+    }
+
+    /**
+     * override method,when transfer to array,it return GraphQL description
+     * @param array $fields
+     * @param array $expand
+     * @param bool $recursive
+     * @return array
+     */
+    public function toArray(array $fields = [], array $expand = [], $recursive = true)
+    {
+        return $this->getAttributes();
     }
 
     /**
@@ -95,11 +108,12 @@ class GraphQLType extends Fluent
     }
 
     /**
-     * Get the attributes from the container.
-     *
+     * Get the graphql office's description format,that will be used for create GraphQL Object Type.
+     * @param $name
+     * @param $except
      * @return array
      */
-    public function getAttributes()
+    public function getAttributes($name = null, $except = null)
     {
         $attributes = array_merge($this->attributes, [
             'fields' => function () {

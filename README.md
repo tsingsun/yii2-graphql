@@ -116,6 +116,21 @@ class xxxController extends Controller{
     'type'=>GraphQL::type(UserType::class)
 ```
 
+### 输入验证
+
+针对mutation的数据提交,提供了验证支持.
+除了graphql基于的验证外,还可以使用yii的验证,目前为针对输入参数验证.直接在mutation定义中增加rules方法,
+与Yii Model的使用方式是一致的.
+```php
+public function rules()
+    {
+        return [
+            ['password','boolean']
+        ];
+    }
+
+```
+
 ### 授权验证
 
 由于graphql查询是可以采用组合方式，如一次查询合并了两个query，而这两个query具有不同的授权约束，因此在graph中需要采用自定义的验证方式。
