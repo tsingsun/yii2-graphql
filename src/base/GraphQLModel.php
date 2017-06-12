@@ -8,13 +8,10 @@
 
 namespace yii\graphql\base;
 
-use yii\base\Arrayable;
-use yii\base\Component;
-use ArrayAccess;
 use yii\base\Model;
 
 /**
- * Fluent is a field manager Container,"Fluent" the name is from lavarel.but feature is unsame
+ * GraphQL attributes manager base on Yii Model
  * @package yii\graphql\base
  */
 class GraphQLModel extends Model

@@ -22,7 +22,6 @@ use yii\web\Application;
  * ```
  * 每一个节点包括了name,type,args,description等
  *
- * @method resolve($root, $args, Application | object $context, ResolveInfo $info)
  * @package yii\graphql\base
  */
 class GraphQLField extends GraphQLModel

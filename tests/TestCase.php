@@ -16,12 +16,6 @@ use yiiunit\extensions\graphql\objects\query\UserQuery;
 use yiiunit\extensions\graphql\objects\query\ViewerQuery;
 use yiiunit\extensions\graphql\objects\types\ExampleType;
 
-/**
- * Created by PhpStorm.
- * User: tsingsun
- * Date: 2016/11/16
- * Time: 下午1:42
- */
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
     protected $queries;
