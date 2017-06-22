@@ -104,12 +104,19 @@ class GraphQL
                 $types[] = $this->getType($name);
             }
         }
-        $query = $this->objectType($schemaQuery, [
-            'name' => 'Query'
-        ]);
-        $mutation = $this->objectType($schemaMutation, [
-            'name' => 'Mutation'
-        ]);
+        $query = null;
+        if (!empty($schemaQuery)) {
+            $query = $this->objectType($schemaQuery, [
+                'name' => 'Query'
+            ]);
+        }
+        $mutation = null;
+        if (!empty($schemaMutation)) {
+            $mutation = $this->objectType($schemaMutation, [
+                'name' => 'Mutation'
+            ]);
+        }
+
         $result = new Schema([
             'query' => $query,
             'mutation' => $mutation,
