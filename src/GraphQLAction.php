@@ -47,8 +47,13 @@ class GraphQLAction extends Action
             $this->variables = $request->get('variables');
         } else {
             $body = $request->getBodyParams();
-            $this->query = $body['query'] ?? $body;
-            $this->variables = $body['variables'] ?? [];
+            if (empty($body)) {
+                //取原始文件当查询,这时只支持如其他方式下的query的节点的查询
+                $this->query = $request->getRawBody();
+            } else {
+                $this->query = $body['query'] ?? $body;
+                $this->variables = $body['variables'] ?? [];
+            }
         }
         if (empty($this->query)) {
             throw new InvalidParamException('invalid query,query document not found');
