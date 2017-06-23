@@ -104,12 +104,11 @@ class GraphQL
                 $types[] = $this->getType($name);
             }
         }
-        $query = null;
-        if (!empty($schemaQuery)) {
-            $query = $this->objectType($schemaQuery, [
-                'name' => 'Query'
-            ]);
-        }
+        //graqhql的validator要求query必须有
+        $query = $this->objectType($schemaQuery, [
+            'name' => 'Query'
+        ]);
+
         $mutation = null;
         if (!empty($schemaMutation)) {
             $mutation = $this->objectType($schemaMutation, [
