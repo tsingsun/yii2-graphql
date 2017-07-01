@@ -14,6 +14,10 @@ use GraphQL\Type\Definition\Type;
 use yii\base\DynamicModel;
 use yii\graphql\GraphQL;
 
+/**
+ * Class GraphQLType
+ * @package yii\graphql\base
+ */
 class GraphQLType extends GraphQLModel
 {
     protected $inputObject = false;

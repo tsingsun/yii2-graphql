@@ -68,17 +68,6 @@ class GraphQLTest extends TestCase
     }
 
     /**
-     * Test schema with wrong name
-     *
-     * @test
-     * @expectedException SchemaNotFound
-     */
-    public function testSchemaWithWrongName()
-    {
-        $schema = $this->graphql->buildSchema('wrong');
-    }
-
-    /**
      * Test type
      *
      * @test

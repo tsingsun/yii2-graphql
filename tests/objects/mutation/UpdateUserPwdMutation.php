@@ -50,14 +50,14 @@ class UpdateUserPwdMutation extends GraphQLMutation
             return null;
         }
 
-        $user['password'] = md5($args['password']);
+        $user->password = md5($args['password']);
         return $user;
     }
 
     public function rules()
     {
         return [
-            ['password', 'boolean']
+            ['password', 'string']
         ];
     }
 

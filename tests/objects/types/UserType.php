@@ -5,6 +5,7 @@ namespace yiiunit\extensions\graphql\objects\types;
 use GraphQL\Type\Definition\Type;
 use yii\graphql\base\GraphQLType;
 use yii\graphql\GraphQL;
+use yii\graphql\types\EmailType;
 use yii\graphql\types\Types;
 use yiiunit\extensions\graphql\data\DataSource;
 use yiiunit\extensions\graphql\data\User;
@@ -26,8 +27,8 @@ class UserType extends GraphQLType
     {
         $result = [
             'id' => ['type'=>Type::id()],
-            'email' => Types::email(),
-            'email2' => Types::email(),
+            'email' => GraphQL::type(EmailType::class),
+            'email2' => GraphQL::type(EmailType::class),
             'photo' => [
                 'type' => GraphQL::type(ImageType::class),
                 'description' => 'User photo URL',
@@ -55,16 +56,5 @@ class UserType extends GraphQLType
     public function resolvePhotoField(User $user,$args){
         return DataSource::getUserPhoto($user->id, $args['size']);
     }
-
-    public function resolveIdField(User $user, $args)
-    {
-        return $user->id.'test';
-    }
-
-    public function resolveEmail2Field(User $user, $args)
-    {
-        return $user->email2.'test';
-    }
-
 
 }

@@ -86,7 +86,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
                             'user' => UserQuery::class,
                             'viewer' => ViewerQuery::class,
                             'stories' => StoryListQuery::class,
-                            'userModel' => UserModelQuery::class,
                             'lastStoryPosted' => LastStoryPostedQuery::class,
                         ],
                         'mutation' => [

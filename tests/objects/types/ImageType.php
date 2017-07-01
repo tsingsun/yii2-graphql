@@ -7,6 +7,7 @@ use GraphQL\Type\Definition\Type;
 use yii\graphql\base\GraphQLType;
 use yii\graphql\GraphQL;
 use yii\graphql\types\Types;
+use yii\graphql\types\UrlType;
 use yii\web\Application;
 use yiiunit\extensions\graphql\data\Image;
 
@@ -31,7 +32,7 @@ class ImageType extends GraphQLType
             'width' => Type::int(),
             'height' => Type::int(),
             'url' => [
-                'type' => Types::url(),
+                'type' => GraphQL::Type(UrlType::class),
                 'resolve' => [$this, 'resolveUrl']
             ],
 

@@ -24,8 +24,6 @@ use GraphQL\Validator\Rules\QueryComplexity;
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
-use yii\db\ActiveRecord;
-use yii\graphql\base\ActiveRecordType;
 use yii\graphql\base\GraphQLField;
 use yii\graphql\base\GraphQLType;
 use yii\graphql\exception\TypeNotFound;
@@ -341,6 +339,9 @@ class GraphQL
     public function getType($name)
     {
         $class = $name;
+        if (is_object($class)) {
+            $name = get_class($class);
+        }
         if (isset($this->types[$name])) {
             $class = $this->types[$name];
 
@@ -350,13 +351,16 @@ class GraphQL
         }
 
         //class is string or not found;
+        if (is_string($class)) {
+            if (strpos($class, '\\') !== false && !class_exists($class)) {
+                throw new TypeNotFound('Type ' . $name . ' not found.');
+            }
 
-        if (strpos($class, '\\') !== false && !class_exists($class)) {
+        } elseif (!is_object($class)) {
             throw new TypeNotFound('Type ' . $name . ' not found.');
         }
         $type = $this->buildType($class);
         $this->types[$name] = $type;
-
         return $type;
     }
 
@@ -372,18 +376,13 @@ class GraphQL
         if (!is_object($type)) {
             $type = Yii::createObject($type);
         }
-
-        if ($type instanceof GraphQLType) {
+        if ($type instanceof Type) {
+            return $type;
+        } elseif ($type instanceof GraphQLType) {
             //transfer ObjectType
             return $type->toType();
         } elseif ($type instanceof GraphQLField) {
             //field is not need transfer to ObjectType,it just need config array
-            return $type;
-        } elseif ($type instanceof ActiveRecord) {
-            //transfer ObjectType
-            $type = new ActiveRecordType($type);
-            return $type->toType();
-        } elseif ($type instanceof Type) {
             return $type;
         }
 
