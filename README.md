@@ -1,11 +1,12 @@
 # yii-graphql #
 
-使用 Facebook [GraphQL](http://facebook.github.io/graphql/) 的PHP服务端实现. 扩展 [graphql-php](https://github.com/webonyx/graphql-php) 以适用于 YII2 ,当前还属于 **开发中**. 
+使用 Facebook [GraphQL](http://facebook.github.io/graphql/) 的PHP服务端实现. 扩展 [graphql-php](https://github.com/webonyx/graphql-php) 以适用于 YII2 ,当前还属于 **开发中**.
+ 
 [![Latest Stable Version](https://poser.pugx.org/tsingsun/yii2-graphql/v/stable.svg)](https://packagist.org/packages/tsingsun/yii2-graphql)
 [![Build Status](https://travis-ci.org/tsingsun/yii2-graphql.png?branch=master)](https://travis-ci.org/tsingsun/yii2-graphql)
 [![Total Downloads](https://poser.pugx.org/tsingsun/yii2-graphql/downloads.svg)](https://packagist.org/packages/tsingsun/yii2-graphql)
 
------
+--------
 
 通过这个文档 [documentation](https://facebook.github.io/relay/docs/graphql-relay-specification.html#content) 你可以了解一些Relay的知识.
 
@@ -17,14 +18,6 @@ yii-graphql主要在使用的便利及加载方式做了较多优化.
 1.配置最小化,包括简化标准graphql协议的定义.
 2.按需要\懒加载,根据类型定义的全限定名,实现按需加载与懒,不需要在系统初始时将全部类型定义加载进入.
 3.如果配合activerecord类型,relay对于表的查询操作十分简单.
-
-todo
-1.ActiveRecordType 导航属性的实现.
-2.ActiveRecordType query schema的免定义
-3.只针对activerecordType由于需要查询数据库定义,因此对该类型做了缓存,考虑通过压力测试看是否把全类型做缓存(最低优先级)
-4.错误验证的返回
-
-PS:对于graphql的一些特殊语法,像参数语法,接口语法,内置指令语法还未进行测试
 
 ### 安装 ###
 
@@ -354,3 +347,7 @@ array definitions
             string kind
             string value
 ```
+
+### todo
+* ActiveRecord generate tool for generating query and mutation class.
+* 对于graphql的一些特殊语法,像参数语法,接口语法,内置指令语法还未进行测试
