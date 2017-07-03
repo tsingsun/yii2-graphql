@@ -1,6 +1,13 @@
 # yii-graphql #
 
-使用 Facebook [GraphQL](http://facebook.github.io/graphql/) 与 [React Relay](https://facebook.github.io/relay/). 扩展 [graphql-php](https://github.com/webonyx/graphql-php) 以适用于 YII2 ,当前还属于 **开发中**. 通过这个文档 [documentation](https://facebook.github.io/relay/docs/graphql-relay-specification.html#content) 你可以了解一些Relay的知识.
+使用 Facebook [GraphQL](http://facebook.github.io/graphql/) 的PHP服务端实现. 扩展 [graphql-php](https://github.com/webonyx/graphql-php) 以适用于 YII2 ,当前还属于 **开发中**. 
+[![Latest Stable Version](https://poser.pugx.org/tsingsun/yii2-graphql/v/stable.svg)](https://packagist.org/packages/tsingsun/yii2-graphql)
+[![Build Status](https://travis-ci.org/tsingsun/yii2-graphql.png?branch=master)](https://travis-ci.org/tsingsun/yii2-graphql)
+[![Total Downloads](https://poser.pugx.org/tsingsun/yii2-graphql/downloads.svg)](https://packagist.org/packages/tsingsun/yii2-graphql)
+
+-----
+
+通过这个文档 [documentation](https://facebook.github.io/relay/docs/graphql-relay-specification.html#content) 你可以了解一些Relay的知识.
 
 同时对Graphql-php的解构设计思路来源于 [laraval-graphql](https://github.com/Folkloreatelier/laravel-graphql).
 

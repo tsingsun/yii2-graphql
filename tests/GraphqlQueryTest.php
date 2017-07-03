@@ -35,7 +35,8 @@ class GraphqlQueryTest extends TestCase
     /**
      * test if work
      */
-    public function testQueryValid(){
+    public function testQueryValid()
+    {
         $result = $this->graphQL->query($this->queries['hello']);
         $this->assertArrayHasKey('data', $result);
         $this->assertArrayNotHasKey('errors', $result);
@@ -44,7 +45,8 @@ class GraphqlQueryTest extends TestCase
     /**
      * test sample object query
      */
-    public function testQueryWithSingleObject(){
+    public function testQueryWithSingleObject()
+    {
         $result = $this->graphQL->query($this->queries['singleObject'], null, \Yii::$app);
         $this->assertArrayHasKey('data', $result);
         $this->assertArrayNotHasKey('errors', $result);
@@ -53,8 +55,28 @@ class GraphqlQueryTest extends TestCase
     /**
      * test multi object in a query
      */
-    public function testQueryWithMultiObject(){
+    public function testQueryWithMultiObject()
+    {
         $result = $this->graphQL->query($this->queries['multiObject'], null, \Yii::$app);
+        $this->assertArrayHasKey('data', $result);
+        $this->assertArrayNotHasKey('errors', $result);
+    }
+
+    public function testQueryWithUnion()
+    {
+        $query = '
+            query search
+            {
+                search(query:"a",limit:2,after:1,type:story){
+                    nodes{                       
+                       ... on story{
+                          id                          
+                       }
+                    }
+                }
+            }
+        ';
+        $result = $this->graphQL->query($query, null, \Yii::$app);
         $this->assertArrayHasKey('data', $result);
         $this->assertArrayNotHasKey('errors', $result);
     }

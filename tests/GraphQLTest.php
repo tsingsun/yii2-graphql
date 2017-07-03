@@ -7,6 +7,7 @@ use GraphQL\Type\Definition\ObjectType;
 use yii\graphql\exception\SchemaNotFound;
 use yii\graphql\GraphQL;
 use yiiunit\extensions\graphql\objects\types\ExampleType;
+use yiiunit\extensions\graphql\objects\types\ResultItemType;
 
 /**
  * Created by PhpStorm.
@@ -80,6 +81,12 @@ class GraphQLTest extends TestCase
         $typeOther = GraphQL::type('example');
         $this->assertFalse($type === $typeOther);
 
+    }
+
+    public function testUnionType()
+    {
+        $type = GraphQL::type(ResultItemType::className());
+        $this->assertInstanceOf(\GraphQL\Type\Definition\UnionType::class, $type);
     }
 
     public function testParseRequestQuery()

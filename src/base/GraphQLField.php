@@ -26,7 +26,6 @@ use yii\web\Application;
  */
 class GraphQLField extends GraphQLModel
 {
-
     public function type()
     {
         return null;
