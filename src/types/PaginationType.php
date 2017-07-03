@@ -25,7 +25,7 @@ class PaginationType extends InputObjectType
                     'description' => 'Returns the first n elements from the list.'
                 ],
                 'after' => [
-                    'type' => Type::int(),
+                    'type' => Type::string(),
                     'description' => 'Returns the elements in the list that come after the specified global ID.'
                 ],
                 'last' => [
@@ -33,7 +33,7 @@ class PaginationType extends InputObjectType
                     'Returns the last n elements from the list..'
                 ],
                 'before' => [
-                    'type' => Type::int(),
+                    'type' => Type::string(),
                     'description' => 'Returns the elements in the list that come before the specified global ID.'
                 ],
             ],
