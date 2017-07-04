@@ -43,6 +43,9 @@ class UpdateUserPwdMutation extends GraphQLMutation
 
     public function resolve($root, $args)
     {
+        if ($args['id'] == 'qsli@google.com') {
+            $args['id'] = 1;
+        }
         $user = DataSource::findUser($args['id']);
 
         if(!$user)
@@ -57,7 +60,7 @@ class UpdateUserPwdMutation extends GraphQLMutation
     public function rules()
     {
         return [
-            ['password', 'string']
+            ['id', 'email']
         ];
     }
 

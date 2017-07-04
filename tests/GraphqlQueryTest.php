@@ -80,4 +80,24 @@ class GraphqlQueryTest extends TestCase
         $this->assertArrayHasKey('data', $result);
         $this->assertArrayNotHasKey('errors', $result);
     }
+
+    public function testQueryWithInterface()
+    {
+        $query = '
+            query {
+                node(id:"1",type:"story"){
+                    id,
+                    ... on story{
+                        author{
+                            id,
+                            email
+                        }
+                    }
+                }
+            }
+        ';
+        $result = $this->graphQL->query($query, null, \Yii::$app);
+        $this->assertArrayHasKey('data', $result);
+        $this->assertArrayNotHasKey('errors', $result);
+    }
 }

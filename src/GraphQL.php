@@ -19,6 +19,7 @@ use GraphQL\Language\Source;
 use GraphQL\Schema;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
+use GraphQL\Type\Resolution;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\QueryComplexity;
 use Yii;
@@ -36,23 +37,41 @@ use yii\helpers\ArrayHelper;
 class GraphQL
 {
     /**
-     * @var array query类型配置信息
+     * @var array query map config
      */
     public $queries = [];
     /**
-     * @var array mutation类型的配置信息
+     * @var array mutation map config
      */
     public $mutations = [];
     /**
-     * @var array type类型的配置信息
+     * @var array type map config
      */
     public $types = [];
-
-    protected $typesInstances = [];
 
     public $errorFormatter;
 
     private $currentDocument;
+    /**
+     * @var TypeResolution
+     */
+    private $typeResolution;
+
+    function __construct()
+    {
+    }
+
+    /**
+     * get TypeResolution
+     * @return TypeResolution
+     */
+    public function getTypeResolution()
+    {
+        if (!$this->typeResolution) {
+            $this->typeResolution = new TypeResolution();
+        }
+        return $this->typeResolution;
+    }
 
     /**
      * 接收schema数据，并入的配置信息
@@ -76,7 +95,7 @@ class GraphQL
             $schemaTypes = ArrayHelper::getValue($schema, 'types', []);
             $this->queries += $schemaQuery;
             $this->mutations += $schemaMutation;
-            $this->types += $schemaTypes;
+            $this->getTypeResolution()->setAlias($schemaTypes);
         }
     }
 
@@ -99,110 +118,35 @@ class GraphQL
         $types = [];
         if (sizeof($schemaTypes)) {
             foreach ($schemaTypes as $name => $type) {
-                $types[] = $this->getType($name);
+                $types[] = $this->getTypeResolution()->parseType($name, true);
             }
         }
         //graqhql的validator要求query必须有
-        $query = $this->objectType($schemaQuery, [
+        $query = $this->getTypeResolution()->objectType($schemaQuery, [
             'name' => 'Query'
         ]);
 
         $mutation = null;
         if (!empty($schemaMutation)) {
-            $mutation = $this->objectType($schemaMutation, [
+            $mutation = $this->getTypeResolution()->objectType($schemaMutation, [
                 'name' => 'Mutation'
             ]);
         }
 
+        $this->getTypeResolution()->initTypes([$query, $mutation], $schema == null);
+
         $result = new Schema([
             'query' => $query,
             'mutation' => $mutation,
-            'types' => $types
+            'types' => $types,
+            'typeResolution' => $this->getTypeResolution(),
         ]);
         return $result;
     }
 
-    /**
-     * 获取指定类型GraphQL的ObjectType实例
-     * @param $type
-     * @param array $opts
-     * @return ObjectType|null
-     */
-    public function objectType($type, $opts = [])
-    {
-        // If it's already an ObjectType, just update properties and return it.
-        // If it's an array, assume it's an array of fields and build ObjectType
-        // from it. Otherwise, build it from a string or an instance.
-        $objectType = null;
-        if ($type instanceof ObjectType) {
-            $objectType = $type;
-            foreach ($opts as $key => $value) {
-                if (property_exists($objectType, $key)) {
-                    $objectType->{$key} = $value;
-                }
-                if (isset($objectType->config[$key])) {
-                    $objectType->config[$key] = $value;
-                }
-            }
-        } elseif (is_array($type)) {
-            $objectType = $this->buildObjectTypeFromFields($type, $opts);
-        } else {
-            $objectType = $this->buildObjectTypeFromClass($type, $opts);
-        }
-
-        return $objectType;
-    }
 
     /**
-     * build ObjectType from classname  config
-     * @param Object|array $type 能够转换为ObjectType的类实例或者类配置
-     * @param array $opts
-     * @return object
-     * @throws InvalidConfigException
-     */
-    protected function buildObjectTypeFromClass($type, $opts = [])
-    {
-        if (!is_object($type)) {
-            $type = Yii::createObject($type);
-        }
-
-        foreach ($opts as $key => $value) {
-            $type->{$key} = $value;
-        }
-
-        return $type->toType();
-    }
-
-    /**
-     * 通过graphql声明配置构建GraphQL ObjectType
-     * @param array $fields use standard graphql declare.
-     * @param array $opts
-     * @return ObjectType
-     * @throws InvalidConfigException
-     */
-    protected function buildObjectTypeFromFields($fields, $opts = [])
-    {
-        $typeFields = [];
-        foreach ($fields as $name => $field) {
-            if (is_string($field)) {
-                $field = Yii::createObject($field);
-                $name = is_numeric($name) ? $field->name : $name;
-                $field['name'] = $name;
-                $field = $field->toArray();
-            } else {
-                $name = is_numeric($name) ? $field['name'] : $name;
-                $field['name'] = $name;
-            }
-            $typeFields[$name] = $field;
-        }
-
-        return new ObjectType(array_merge([
-            'fields' => $typeFields
-        ], $opts));
-    }
-
-    /**
-     * 查询入口，主要通过该方法返回数据
+     * query access
      * @param $requestString
      * @param null $rootValue
      * @param null $contextValue
@@ -317,76 +261,18 @@ class GraphQL
     }
 
     /**
-     * 通过名称获取GraphQL的类型系统实例
-     * @param $name
+     * Type manager access
+     * @param string|Type $name
+     * @param bool $byAlias if use alias
      * @return mixed
      */
-    public static function type($name)
+    public static function type($name, $byAlias = false)
     {
         /** @var GraphQLModuleTrait $module */
         $module = Yii::$app->controller ? Yii::$app->controller->module : Yii::$app->getModule('graphql');
         $gql = $module->getGraphQL();
 
-        return $gql->getType($name);
-    }
-
-    /**
-     * get type by name,this method is use in Type definition class for TypeSystem
-     * @param $name
-     * @return ObjectType|null
-     * @throws TypeNotFound
-     */
-    public function getType($name)
-    {
-        $class = $name;
-        if (is_object($class)) {
-            $name = get_class($class);
-        }
-        if (isset($this->types[$name])) {
-            $class = $this->types[$name];
-
-            if (is_object($class)) {
-                return $class;
-            }
-        }
-
-        //class is string or not found;
-        if (is_string($class)) {
-            if (strpos($class, '\\') !== false && !class_exists($class)) {
-                throw new TypeNotFound('Type ' . $name . ' not found.');
-            }
-
-        } elseif (!is_object($class)) {
-            throw new TypeNotFound('Type ' . $name . ' not found.');
-        }
-        $type = $this->buildType($class);
-        $this->types[$name] = $type;
-        return $type;
-    }
-
-    /**
-     * @param string $type type name
-     * @param array $opts return Type's attribute set
-     * @return ObjectType|Type|GraphQLField
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     */
-    protected function buildType($type)
-    {
-        if (!is_object($type)) {
-            $type = Yii::createObject($type);
-        }
-        if ($type instanceof Type) {
-            return $type;
-        } elseif ($type instanceof GraphQLType) {
-            //transfer ObjectType
-            return $type->toType();
-        } elseif ($type instanceof GraphQLField) {
-            //field is not need transfer to ObjectType,it just need config array
-            return $type;
-        }
-
-        throw new NotSupportedException("Type:{$type} is not support translate to Graph Type");
+        return $gql->getTypeResolution()->parseType($name, $byAlias);
     }
 
     /**

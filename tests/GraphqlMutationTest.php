@@ -26,7 +26,7 @@ class GraphqlMutationTest extends TestCase
 
     public function testUpdateUserPwd(){
         $query = "mutation updateUserPwd{
-            updateUserPwd(id: \"1\", password: \"123456\") {
+            updateUserPwd(id: \"qsli@google.com\", password: \"123456\") {
                 id,
                 firstName
             }

@@ -18,6 +18,11 @@ class ImageType extends GraphQLType
         'description'=>'a common image type'
     ];
 
+    public function interfaces()
+    {
+        return [GraphQL::type(NodeType::className())];
+    }
+
     public function fields()
     {
         $result = [

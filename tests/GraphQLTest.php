@@ -78,8 +78,8 @@ class GraphQLTest extends TestCase
         $type = GraphQL::type(ExampleType::class);
         $this->assertInstanceOf(\GraphQL\Type\Definition\ObjectType::class, $type);
 
-        $typeOther = GraphQL::type('example');
-        $this->assertFalse($type === $typeOther);
+        $typeOther = GraphQL::type('example', true);
+        $this->assertTrue($type === $typeOther);
 
     }
 

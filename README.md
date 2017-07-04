@@ -77,7 +77,7 @@ resolve | callback | **function($value, $args, $context, GraphQL\Type\Definition
         use GraphQLModuleTrait;
      }
 ```
-配置文件
+Yii config file:
 ```php
 'components'=>[
     'graphql'=>[
@@ -90,8 +90,10 @@ resolve | callback | **function($value, $args, $context, GraphQL\Type\Definition
           'mutation' => [
               'login'
           ],
-          //types一般不需要进行配置，当有特殊类型时
-          'types'=>[
+          //if you use sample query except query contain interface,fragment,not need set
+          //the key must same as your class definded
+          'types'=>[          
+              'Story'=>'yiiunit\extensions\graphql\objects\types\StoryType'
           ],
         ]                
     ],    
@@ -350,4 +352,4 @@ array definitions
 
 ### todo
 * ActiveRecord generate tool for generating query and mutation class.
-* 对于graphql的一些特殊语法,像参数语法,接口语法,内置指令语法还未进行测试
+* 对于graphql的一些特殊语法,像参数语法,内置指令语法还未进行测试

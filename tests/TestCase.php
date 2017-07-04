@@ -10,12 +10,14 @@ use yiiunit\extensions\graphql\data\DataSource;
 use yiiunit\extensions\graphql\objects\mutation\UpdateUserPwdMutation;
 use yiiunit\extensions\graphql\objects\query\HelloQuery;
 use yiiunit\extensions\graphql\objects\query\LastStoryPostedQuery;
+use yiiunit\extensions\graphql\objects\query\NodeQuery;
 use yiiunit\extensions\graphql\objects\query\SearchQuery;
 use yiiunit\extensions\graphql\objects\query\StoryListQuery;
 use yiiunit\extensions\graphql\objects\query\UserModelQuery;
 use yiiunit\extensions\graphql\objects\query\UserQuery;
 use yiiunit\extensions\graphql\objects\query\ViewerQuery;
 use yiiunit\extensions\graphql\objects\types\ExampleType;
+use yiiunit\extensions\graphql\objects\types\StoryType;
 
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
@@ -89,13 +91,14 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
                             'stories' => StoryListQuery::class,
                             'lastStoryPosted' => LastStoryPostedQuery::class,
                             'search' => SearchQuery::className(),
+                            'node' => NodeQuery::className(),
                         ],
                         'mutation' => [
                             'updateUserPwd' => UpdateUserPwdMutation::class
                         ],
                         'types' => [
                             'example' => ExampleType::class,
-//                            'story' => StoryType::class,
+                            'story' => StoryType::class,
 //                            'comment' => CommentType::class,
 //                            'image' => ImageType::class,
 //                            'imageSizeEnum' => ImageSizeEnumType::class,

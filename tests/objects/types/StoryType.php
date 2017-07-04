@@ -29,6 +29,11 @@ class StoryType extends GraphQLType
         'description'=>'it is a story'
     ];
 
+    public function interfaces()
+    {
+        return [GraphQL::type(NodeType::className())];
+    }
+
     public function fields()
     {
         return [

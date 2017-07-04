@@ -23,6 +23,11 @@ class UserType extends GraphQLType
         'description'=>'user is user'
     ];
 
+    public function interfaces()
+    {
+        return [GraphQL::type(NodeType::className())];
+    }
+
     public function fields()
     {
         $result = [

@@ -30,7 +30,7 @@ class PaginationType extends InputObjectType
                 ],
                 'last' => [
                     'type' => Type::int(),
-                    'Returns the last n elements from the list..'
+                    'description' => 'Returns the last n elements from the list..'
                 ],
                 'before' => [
                     'type' => Type::string(),
