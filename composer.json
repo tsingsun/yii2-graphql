@@ -3,7 +3,7 @@
     "description":"facebook graphql server side for yii2 php framework",
     "keyword":["yii2","graphql"],    
     "type":"yii2-extension",
-    "license":"private",
+    "license": "BSD-3-Clause",
     "authors":[
         {
             "name":"QingShan li",
