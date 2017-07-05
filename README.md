@@ -246,43 +246,6 @@ class UserType extends GraphQLType
 }
 ```
 
-#### 创建基于yii activerecord查询 ####
-
-像普通的Query创建一个Query文件,只需要将type指向模型文件即可
-```php
-class UserModelQuery extends GraphQLQuery
-{
-    public function type()
-    {
-        return Type::listOf(GraphQL::type(UserModel::class));
-    }
-
-    public function args()
-    {
-        return [
-            'id'=>[
-                'type'=>Type::id(),
-                'description'=>'用户的ID'
-            ],
-            'pageIndex'=>[
-                'type'=>Type::int(),
-                'description'=>''
-            ],
-            'pageSize'=> [
-                'type'=> Type::int(),
-                'description'=>'',
-            ],
-        ];
-    }
-
-    public function resolve($root,$args,$context,ResolveInfo $info){
-        $id = $args['id'];
-        return UserModel::findAll(['id'=>$id]);
-    }
-
-}
-```
-
 #### 查询实例 ####
 
 ```php
@@ -350,6 +313,6 @@ array definitions
             string value
 ```
 
-### todo
+### Future
 * ActiveRecord generate tool for generating query and mutation class.
 * 对于graphql的一些特殊语法,像参数语法,内置指令语法还未进行测试

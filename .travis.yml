@@ -1,0 +1,93 @@
+#
+# Travis Setup
+#
+
+# faster builds on new travis setup not using sudo
+sudo: false
+
+# build only on master branches
+# commented as this prevents people from running builds on their forks:
+# https://github.com/yiisoft/yii2/commit/bd87be990fa238c6d5e326d0a171f38d02dc253a
+#branches:
+#  only:
+#    - master
+#    - 2.1
+
+
+#
+# Test Matrix
+#
+
+language: php
+
+env:
+  global:
+    - DEFAULT_COMPOSER_FLAGS="--prefer-dist --no-interaction --no-progress --optimize-autoloader"
+    - TASK_TESTS_PHP=1
+    - TASK_TESTS_JS=0
+    - TASK_TESTS_COVERAGE=0
+
+# cache vendor dirs
+cache:
+  directories:
+    - vendor
+    - $HOME/.composer/cache
+    - $HOME/.npm
+
+matrix:
+  fast_finish: true
+  include:
+    # run tests coverage on PHP 7.1
+    - php: 7.1
+      env: TASK_TESTS_COVERAGE=1
+
+    - php: 7.0
+  allow_failures:
+    - php: 7.1
+
+install:
+  - |
+    if [[ $TASK_TESTS_COVERAGE != 1 && $TRAVIS_PHP_VERSION != hhv* ]]; then
+      # disable xdebug for performance reasons when code coverage is not needed. note: xdebug on hhvm is disabled by default
+      phpenv config-rm xdebug.ini || echo "xdebug is not installed"
+    fi
+
+  # install composer dependencies
+  - travis_retry composer self-update
+  - export PATH="$HOME/.composer/vendor/bin:$PATH"
+  - |
+    if [[ $TRAVIS_PHP_VERSION == "hhvm-3.12" ]]; then
+      # remove php-cs-fixer from composer dependencies on hhvm-3.12 - php-cs-fixer requires at least hhvm-3.18
+      composer remove friendsofphp/php-cs-fixer --dev
+    fi
+  - travis_retry composer install $DEFAULT_COMPOSER_FLAGS
+
+before_script:
+  # show some versions and env information
+  - php --version
+  - composer --version
+  - |
+    if [ $TASK_TESTS_JS == 1 ]; then
+      node --version
+      npm --version
+    fi
+  # enable code coverage
+  - |
+    if [ $TASK_TESTS_COVERAGE == 1 ]; then
+      PHPUNIT_FLAGS="--coverage-clover=coverage.clover"
+    fi
+
+
+script:
+  # PHP tests
+  - |
+    if [ $TASK_TESTS_PHP == 1 ]; then
+      vendor/bin/phpunit --verbose $PHPUNIT_FLAGS --configuration phpunit.xml.dist
+    fi
+
+after_script:
+  - |
+    if [ $TASK_TESTS_COVERAGE == 1 ]; then
+      travis_retry wget https://scrutinizer-ci.com/ocular.phar
+      php ocular.phar code-coverage:upload --format=php-clover coverage.clover
+    fi
