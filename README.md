@@ -21,10 +21,10 @@ yii-graphql主要在使用的便利及加载方式做了较多优化.
 
 ### 安装 ###
 
-本库位于私有库中,需要在项目composer.json添加库地址,目前还处理开发中
+本库位于私有库中,需要在项目composer.json添加库地址
 ```php    
 "require": {
-    "tsingsun/yii2-graphql": "dev-master"
+    "tsingsun/yii2-graphql": "^0.9"
 }
 ```
 
