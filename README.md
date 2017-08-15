@@ -1,6 +1,6 @@
 # yii-graphql #
 
-使用 Facebook [GraphQL](http://facebook.github.io/graphql/) 的PHP服务端实现. 扩展 [graphql-php](https://github.com/webonyx/graphql-php) 以适用于 YII2 ,当前还属于 **开发中**.
+使用 Facebook [GraphQL](http://facebook.github.io/graphql/) 的PHP服务端实现. 扩展 [graphql-php](https://github.com/webonyx/graphql-php) 以适用于 YII2.
  
 [![Latest Stable Version](https://poser.pugx.org/tsingsun/yii2-graphql/v/stable.svg)](https://packagist.org/packages/tsingsun/yii2-graphql)
 [![Build Status](https://travis-ci.org/tsingsun/yii2-graphql.png?branch=master)](https://travis-ci.org/tsingsun/yii2-graphql)
@@ -8,16 +8,12 @@
 
 --------
 
-通过这个文档 [documentation](https://facebook.github.io/relay/docs/graphql-relay-specification.html#content) 你可以了解一些Relay的知识.
+yii-graphql特点
 
-同时对Graphql-php的解构设计思路来源于 [laraval-graphql](https://github.com/Folkloreatelier/laravel-graphql).
-
-为什么要解构graphql-php,该库主要是使graphql协议在php的实现,是不需要考虑在实际项目如何有更好的效率与性能的.包括laraval-graphql也是一样,离理想的生产应用还有差距.按需要定义及懒加载都未实现,必将异常配置文件的维护难度过大.
-
-yii-graphql主要在使用的便利及加载方式做了较多优化.
-1.配置最小化,包括简化标准graphql协议的定义.
+1.配置简化,包括简化标准graphql协议的定义.
 2.按需要\懒加载,根据类型定义的全限定名,实现按需加载与懒,不需要在系统初始时将全部类型定义加载进入.
-3.如果配合activerecord类型,relay对于表的查询操作十分简单.
+3.mutation输入验证支持
+4.提供控制器集成与授权支持
 
 ### 安装 ###
 
