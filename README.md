@@ -323,6 +323,19 @@ class UserType extends GraphQLType
     "
 ```
 
+### Handle Exception
+
+you can config the error formater for graph,the default handle use yii\graphql\ErrorFormatter,
+it optimized processing of Model validation results
+```php
+'modules'=>[
+    'moduleName '=>[
+       'class'=>'xxx\xxxx\module'
+       'errorFormatter'=>['yii\graphql\ErrorFormatter','formatError'],               
+    ],    
+];
+```
+
 ### Future
 
 * ActiveRecord generate tool for generating query and mutation class.

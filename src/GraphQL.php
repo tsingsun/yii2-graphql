@@ -17,17 +17,12 @@ use GraphQL\Language\AST\OperationDefinitionNode;
 use GraphQL\Language\Parser;
 use GraphQL\Language\Source;
 use GraphQL\Schema;
-use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
-use GraphQL\Type\Resolution;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\QueryComplexity;
 use Yii;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
-use yii\graphql\base\GraphQLField;
-use yii\graphql\base\GraphQLType;
-use yii\graphql\exception\TypeNotFound;
+use yii\graphql\exceptions\TypeNotFound;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -176,17 +171,39 @@ class GraphQL
             if ($this->errorFormatter) {
                 $executeResult->setErrorFormatter($this->errorFormatter);
             }
-            return $executeResult->toArray();
+            return $this->parseExecutionResult($executeResult);
         } elseif ($executeResult instanceof Promise) {
             return $executeResult->then(function (ExecutionResult $executionResult) {
                 if ($this->errorFormatter) {
                     $executionResult->setErrorFormatter($this->errorFormatter);
                 }
-                return $executionResult->toArray();
+                return $this->parseExecutionResult($executionResult);
             });
         } else {
             throw new Error\InvariantViolation("Unexpected execution result");
         }
+    }
+
+    private function parseExecutionResult(ExecutionResult $executeResult)
+    {
+        if (empty($executeResult->errors)) {
+            return $executeResult->toArray();
+        }
+        $result = [];
+
+        if (null !== $executeResult->data) {
+            $result['data'] = $executeResult->data;
+        }
+
+        if (!empty($this->errors)) {
+            $result['errors'] = array_map($this->errorFormatter, $this->errors);
+        }
+
+        if (!empty($executeResult->extensions)) {
+            $result['extensions'] = (array)$executeResult->extensions;
+        }
+
+        return $result;
     }
 
     /**
@@ -304,9 +321,9 @@ class GraphQL
 
     /**
      * set error formatter
-     * @param $errorFormatter
+     * @param Callable $errorFormatter
      */
-    public function setErrorFormatter(callable $errorFormatter)
+    public function setErrorFormatter(Callable $errorFormatter)
     {
         $this->errorFormatter = $errorFormatter;
     }

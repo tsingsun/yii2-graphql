@@ -63,12 +63,15 @@ trait GraphQLModuleTrait
      * get graphql handler
      * @return GraphQL
      */
-    public function getGraphQL(){
-        if($this->graphQL == null){
+    public function getGraphQL()
+    {
+        if ($this->graphQL == null) {
             $this->graphQL = new GraphQL();
             $this->graphQL->schema($this->schema);
-            if($this->errorFormatter){
+            if ($this->errorFormatter) {
                 $this->graphQL->setErrorFormatter($this->errorFormatter);
+            } else {
+                $this->graphQL->setErrorFormatter(['yii\graphql\ErrorFormatter', 'formatError']);
             }
         }
         return $this->graphQL;

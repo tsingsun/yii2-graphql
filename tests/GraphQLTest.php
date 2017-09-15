@@ -4,7 +4,6 @@ namespace yiiunit\extensions\graphql;
 
 use GraphQL\Schema;
 use GraphQL\Type\Definition\ObjectType;
-use yii\graphql\exception\SchemaNotFound;
 use yii\graphql\GraphQL;
 use yiiunit\extensions\graphql\objects\types\ExampleType;
 use yiiunit\extensions\graphql\objects\types\ResultItemType;

@@ -1,6 +1,6 @@
 <?php
 
-namespace yii\graphql\exception;
+namespace yii\graphql\exceptions;
 
 use Exception;
 

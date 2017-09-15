@@ -19,7 +19,7 @@ use Yii;
 use yii\base\InvalidConfigException;
 use yii\graphql\base\GraphQLType;
 use yii\graphql\base\GraphQLField;
-use yii\graphql\exception\TypeNotFound;
+use yii\graphql\exceptions\TypeNotFound;
 use yii\base\NotSupportedException;
 use GraphQL\Type\Introspection;
 

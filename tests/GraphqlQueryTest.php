@@ -2,17 +2,6 @@
 
 namespace yiiunit\extensions\graphql;
 
-use GraphQL\GraphQL;
-use GraphQL\Schema;
-use GraphQL\Type\Definition\ObjectType;
-use GraphQL\Type\Definition\Type;
-use GraphQL\Error;
-use yii\graphql\exception\SchemaNotFound;
-use yii\graphql\GraphqlFacade;
-use yiiunit\extensions\graphql\objects\CustomExampleType;
-use yiiunit\extensions\graphql\objects\ExamplesQuery;
-use yiiunit\extensions\graphql\objects\UpdateExampleMutation;
-
 /**
  * Created by PhpStorm.
 
