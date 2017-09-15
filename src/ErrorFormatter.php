@@ -3,7 +3,7 @@
 namespace yii\graphql;
 
 use GraphQL\Error\Error;
-use yii\graphql\exception\ValidatorException;
+use yii\graphql\exceptions\ValidatorException;
 
 /**
  * Class ErrorFormatter

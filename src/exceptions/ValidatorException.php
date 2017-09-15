@@ -6,7 +6,7 @@
  * Time: 上午10:51
  */
 
-namespace yii\graphql\exception;
+namespace yii\graphql\exceptions;
 
 
 use Throwable;

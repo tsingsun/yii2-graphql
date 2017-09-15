@@ -186,7 +186,7 @@ class GraphQL
 
     private function parseExecutionResult(ExecutionResult $executeResult)
     {
-        if (empty($executeResult->errors)) {
+        if (empty($executeResult->errors) || empty($this->errorFormatter)) {
             return $executeResult->toArray();
         }
         $result = [];
@@ -195,8 +195,17 @@ class GraphQL
             $result['data'] = $executeResult->data;
         }
 
-        if (!empty($this->errors)) {
-            $result['errors'] = array_map($this->errorFormatter, $this->errors);
+        if (!empty($executeResult->errors)) {
+            $result['errors'] = [];
+            foreach ($executeResult->errors as $er) {
+                $fr = call_user_func_array($this->errorFormatter, [$er]);
+                if (isset($fr['message'])) {
+                    $result['errors'][] = $fr;
+                } else {
+                    $result['errors'] += $fr;
+                }
+            }
+//            $result['errors'] = array_map($executeResult->errorFormatter, $executeResult->errors);
         }
 
         if (!empty($executeResult->extensions)) {
