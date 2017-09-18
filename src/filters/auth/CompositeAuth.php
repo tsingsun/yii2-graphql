@@ -96,6 +96,7 @@ class CompositeAuth extends \yii\filters\auth\AuthMethod
             foreach ($maps as $key => $value) {
                 foreach ($this->except as $pattern) {
                     if (fnmatch($pattern, $key)) {
+                        $action->removeGraphQlAction($key);
                         continue 2;
                     }
                 }

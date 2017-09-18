@@ -39,7 +39,7 @@ class GraphQLAction extends Action
     /**
      * @var array child graphql actions
      */
-    private $actions = [];
+    private $authActions = [];
     /**
      * @var callable a PHP callable that will be called when running an action to determine
      * if the current user has the permission to execute the action. If not set, the access
@@ -95,10 +95,21 @@ class GraphQLAction extends Action
         if ($this->schemaArray === true) {
             return [self::INTROSPECTIONQUERY => 'true'];
         }
-        if (!$this->actions) {
-            $this->actions = array_merge($this->schemaArray[0], $this->schemaArray[1]);
+        $ret = array_merge($this->schemaArray[0], $this->schemaArray[1]);
+        if (!$this->authActions) {
+            //init
+            $this->authActions = array_merge($this->schemaArray[0], $this->schemaArray[1]);
         }
-        return $this->actions;
+        return $ret;
+    }
+
+    /**
+     * remove action that no need check access
+     * @param $key
+     */
+    public function removeGraphQlAction($key)
+    {
+        unset($this->authActions[$key]);
     }
 
     /**
@@ -111,8 +122,8 @@ class GraphQLAction extends Action
             //调度状态下将执行构建查询
             $this->controller->module->enableValidation();
         }
-        if ($this->actions && $this->checkAccess) {
-            foreach ($this->actions as $childAction) {
+        if ($this->authActions && $this->checkAccess) {
+            foreach ($this->authActions as $childAction) {
                 call_user_func($this->checkAccess, $childAction);
             }
         }
