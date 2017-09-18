@@ -163,7 +163,7 @@ public function rules()
 Since graphql queries can be combined, such as when a query merges two query, and the two query have different authorization constraints, custom authentication is required in graph.
 I refer to this query as "graphql actions"; when all graphql actions conditions are configured, it pass the authorization check.
 
-#### Authorization
+#### Authenticate
 In the behavior method of controller, the authorization method is set as follows
 ```php
 function behaviors()
@@ -180,6 +180,37 @@ function behaviors()
 }
 ```
 If you want to support IntrospectionQuery authorization, the corresponding graphql action is "__schema"
+
+#### Authorization
+if user has pass authenticate,you maybe want to check the access for the resource.you can use GraphqlAction's checkAccess
+in controller where the action host.it will check all graphql actions.
+```php
+class GraphqlController extends Controller
+{
+    public function actions()
+    {
+        return [
+            'index' => [
+                'class' => 'yii\graphql\GraphQLAction',
+                'checkAccess'=> [$this,'checkAccess'],
+            ]
+        ];
+    }
+    /**
+     * authorization
+     * @param $actionName
+     * @throws yii\web\ForbiddenHttpException
+     */
+    public function checkAccess($actionName)
+    {
+        $permissionName = $this->module->id . '/' . $actionName;
+        $pass = Yii::$app->getAuthManager()->checkAccess(Yii::$app->user->id,$permissionName);
+        if(!$pass){
+            throw new yii\web\ForbiddenHttpException('Access Denied');
+        }
+    }    
+}
+```
 
 ### Demo
 

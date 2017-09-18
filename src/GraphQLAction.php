@@ -36,6 +36,23 @@ class GraphQLAction extends Action
     private $schemaArray;
     private $query;
     private $variables;
+    /**
+     * @var array child graphql actions
+     */
+    private $actions = [];
+    /**
+     * @var callable a PHP callable that will be called when running an action to determine
+     * if the current user has the permission to execute the action. If not set, the access
+     * check will not be performed. The signature of the callable should be as follows,
+     *
+     * ```php
+     * function ($actionName) {
+     *
+     *     // If null, it means no specific model (e.g. IndexAction)
+     * }
+     * ```
+     */
+    public $checkAccess;
 
     public function init()
     {
@@ -78,7 +95,10 @@ class GraphQLAction extends Action
         if ($this->schemaArray === true) {
             return [self::INTROSPECTIONQUERY => 'true'];
         }
-        return array_merge($this->schemaArray[0], $this->schemaArray[1]);
+        if (!$this->actions) {
+            $this->actions = array_merge($this->schemaArray[0], $this->schemaArray[1]);
+        }
+        return $this->actions;
     }
 
     /**
@@ -90,6 +110,11 @@ class GraphQLAction extends Action
         if (YII_DEBUG) {
             //调度状态下将执行构建查询
             $this->controller->module->enableValidation();
+        }
+        if ($this->actions && $this->checkAccess) {
+            foreach ($this->actions as $childAction) {
+                call_user_func($this->checkAccess, $childAction);
+            }
         }
         $schema = $this->graphQL->buildSchema($this->schemaArray === true ? null : $this->schemaArray);
         $val = $this->graphQL->execute($schema, null, Yii::$app, $this->variables, null);
