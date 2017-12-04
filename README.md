@@ -25,12 +25,6 @@ use composer
 ```
 composer require tsingsun/yii2-graphql
 ```
-or in composer.json
-```php    
-"require": {
-    "tsingsun/yii2-graphql": "^0.9"
-}
-```
 
 ### Type ###
 The type system is the core of GraphQL, which is embodied in GraphQLType. By deconstructing the graphql protocol and using the graph-php library to achieve fine-grained control of all elements, it is convenient to extend the class according to its own needs
