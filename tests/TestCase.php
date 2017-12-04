@@ -2,7 +2,7 @@
 
 namespace yiiunit\extensions\graphql;
 
-use GraphQL\Type\Definition\Config;
+use GraphQL\Type\Schema;
 use Yii;
 use yii\di\Container;
 use yii\helpers\ArrayHelper;
@@ -142,7 +142,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         parent::setUp();
-        Config::enableValidation();
         $this->queries = include(__DIR__ . '/objects/queries.php');
         DataSource::init();
     }
@@ -150,9 +149,13 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
     protected function assertGraphQLSchema($schema)
     {
-        $this->assertInstanceOf('GraphQL\Schema', $schema);
+        $this->assertInstanceOf('GraphQL\Type\Schema', $schema);
     }
 
+    /**
+     * @param Schema $schema
+     * @param $key
+     */
     protected function assertGraphQLSchemaHasQuery($schema, $key)
     {
         //Query
@@ -168,6 +171,10 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('GraphQL\Type\Definition\ObjectType', $queryType);
     }
 
+    /**
+     * @param Schema $schema
+     * @param $key
+     */
     protected function assertGraphQLSchemaHasMutation($schema, $key)
     {
         //Mutation

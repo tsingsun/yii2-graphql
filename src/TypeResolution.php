@@ -14,7 +14,6 @@ use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
 use GraphQL\Utils;
-use GraphQL\Type\Resolution;
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\graphql\base\GraphQLType;
@@ -23,7 +22,7 @@ use yii\graphql\exceptions\TypeNotFound;
 use yii\base\NotSupportedException;
 use GraphQL\Type\Introspection;
 
-class TypeResolution implements Resolution
+class TypeResolution
 {
     /**
      * @var array<className,string> alias for className to map the type
@@ -93,17 +92,6 @@ class TypeResolution implements Resolution
                 $this->implementations[$iface->name][] = $type;
             }
         }
-
-//        $typeMap = Utils\TypeInfo::extractTypes($type, []);
-//
-//        foreach($typeMap as $typeName => $type){
-//            if ($type instanceof ObjectType) {
-//                foreach ($type->getInterfaces() as $iface) {
-//                    $this->implementations[$iface->name][] = $type;
-//                }
-//            }
-//        }
-
     }
 
     /**
@@ -220,7 +208,7 @@ class TypeResolution implements Resolution
     }
 
     /**
-     * 通过graphql声明配置构建GraphQL ObjectType
+     * Configuring GraphQL ObjectType through the graphql declaration configuration
      * @param array $fields use standard graphql declare.
      * @param array $opts
      * @return ObjectType
@@ -251,8 +239,8 @@ class TypeResolution implements Resolution
      * get type by name,this method is use in Type definition class for TypeSystem
      * @param $name
      * @param bool $byAlias if use alias;
-     * @return ObjectType|null
-     * @throws TypeNotFound
+     * @return Type|null
+     * @throws TypeNotFound | NotSupportedException
      */
     public function parseType($name, $byAlias = false)
     {

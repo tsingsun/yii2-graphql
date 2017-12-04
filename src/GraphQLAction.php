@@ -53,6 +53,10 @@ class GraphQLAction extends Action
      * ```
      */
     public $checkAccess;
+    /**
+     * @var bool whether use Schema validation , and it is recommended only in the development environment
+     */
+    public $enableSchemaAssertValid = YII_ENV_DEV;
 
     public function init()
     {
@@ -118,16 +122,16 @@ class GraphQLAction extends Action
     public function run()
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
-        if (YII_DEBUG) {
-            //调度状态下将执行构建查询
-            $this->controller->module->enableValidation();
-        }
         if ($this->authActions && $this->checkAccess) {
             foreach ($this->authActions as $childAction) {
                 call_user_func($this->checkAccess, $childAction);
             }
         }
         $schema = $this->graphQL->buildSchema($this->schemaArray === true ? null : $this->schemaArray);
+        if ($this->enableSchemaAssertValid) {
+            //调度状态下将执行构建查询
+            $schema->assertValid();
+        }
         $val = $this->graphQL->execute($schema, null, Yii::$app, $this->variables, null);
         $result = $this->graphQL->getResult($val);
         return $result;

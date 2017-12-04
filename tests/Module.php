@@ -18,8 +18,5 @@ class Module extends \yii\base\Module
 
     public function init()
     {
-        if(YII_DEBUG){
-            Config::enableValidation();
-        }
     }
 }

@@ -16,7 +16,7 @@ use yii\web\Controller;
 class GraphQLActionTest extends TestCase
 {
     /**
-     * @var Controller
+     * @var DefaultController
      */
     private $controller;
 
@@ -44,7 +44,9 @@ class GraphQLActionTest extends TestCase
             'query' => 'query error{error}',
         ];
         $controller = $this->controller;
-        $ret = $controller->runAction('index');
+        $action = $controller->createAction('index');
+        $action->enableSchemaAssertValid = false;
+        $ret = $action->runWithParams([]);
         $this->assertNotEmpty($ret);
         $this->assertArrayHasKey('errors', $ret);
     }

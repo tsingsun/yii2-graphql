@@ -3,6 +3,7 @@
 namespace yii\graphql;
 
 use GraphQL\Error\Error;
+use GraphQL\FormattedError;
 use yii\graphql\exceptions\ValidatorException;
 
 /**
@@ -21,6 +22,6 @@ class ErrorFormatter
             }
         }
 
-        return $e->toSerializableArray();
+        return FormattedError::createFromException($e, YII_DEBUG);
     }
 }

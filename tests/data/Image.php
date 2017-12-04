@@ -1,7 +1,7 @@
 <?php
 namespace yiiunit\extensions\graphql\data;
 
-use GraphQL\Utils;
+use GraphQL\Utils\Utils;
 
 class Image
 {

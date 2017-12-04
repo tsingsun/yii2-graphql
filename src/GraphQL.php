@@ -16,7 +16,7 @@ use GraphQL\Language\AST\NameNode;
 use GraphQL\Language\AST\OperationDefinitionNode;
 use GraphQL\Language\Parser;
 use GraphQL\Language\Source;
-use GraphQL\Schema;
+use GraphQL\Type\Schema;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\QueryComplexity;
@@ -26,7 +26,10 @@ use yii\graphql\exceptions\TypeNotFound;
 use yii\helpers\ArrayHelper;
 
 /**
- * GraphQL门面类，在每个Module的使用中，graphql都是独立的，没有采用单例的方式，因为具有与Module实例有一定的耦合，这是合理的。
+ * GraphQL facade class
+ * In the use of each Module, graphql is independent and has no single example,
+ * because it has a certain coupling with the Module instance.
+ *
  * @package yii\graphql
  */
 class GraphQL
@@ -69,7 +72,7 @@ class GraphQL
     }
 
     /**
-     * 接收schema数据，并入的配置信息
+     * Receive schema data and incorporate configuration information
      *
      * 数组格式：
      * $schema = new [
@@ -95,9 +98,10 @@ class GraphQL
     }
 
     /**
-     * 根据输入构建GraphQl Schema,特别注意，由于在构建ObjectType的过程中需要用到Module及Controller,该方法的执行位置受到一定程度的限制
-     * 建立是在Controller中执行
-     * @param Schema|array $schema schema数据
+     * GraphQl Schema is built according to input. Especially,
+     * due to the need of Module and Controller in the process of building ObjectType,
+     * the execution position of the method is restricted to a certain extent.
+     * @param Schema|array $schema schema data
      * @return Schema
      */
     public function buildSchema($schema = null)
@@ -134,7 +138,9 @@ class GraphQL
             'query' => $query,
             'mutation' => $mutation,
             'types' => $types,
-            'typeResolution' => $this->getTypeResolution(),
+            'typeLoader' => function ($name) {
+                return $this->getTypeResolution()->parseType($name, true);
+            }
         ]);
         return $result;
     }
@@ -216,7 +222,7 @@ class GraphQL
     }
 
     /**
-     * 根据schema执行查询，这个方法需要在生成schema后执行
+     * Executing the query according to schema, this method needs to be executed after the schema is generated
      * @param $schema
      * @param $rootValue
      * @param $contextValue

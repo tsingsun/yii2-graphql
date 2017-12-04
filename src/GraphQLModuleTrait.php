@@ -9,10 +9,9 @@
 namespace yii\graphql;
 
 use Yii;
-use GraphQL\Type\Definition\Config;
 
 /**
- * graph特性类，一般是辅助Module类，初始化GraphQl
+ * graphQl trait，help the yii Module initial
  * @author QingShan Li
  */
 trait GraphQLModuleTrait
@@ -50,14 +49,6 @@ trait GraphQLModuleTrait
      * @see \GraphQL\Executor\ExecutionResult
      */
     public $errorFormatter;
-
-    /**
-     * webonyx graphql config validation for debug
-     */
-    public function enableValidation()
-    {
-        Config::enableValidation();
-    }
 
     /**
      * get graphql handler
