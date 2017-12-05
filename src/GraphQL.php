@@ -74,10 +74,10 @@ class GraphQL
     /**
      * Receive schema data and incorporate configuration information
      *
-     * 数组格式：
+     * array format：
      * $schema = new [
      *   'query'=>[
-     *      //配置节点为该$key指向的类型，mutation,types也是如此
+     *      //the key is alias，mutation,types and so on
      *      'hello'=>HelloQuery::class
      *   ],
      *   'mutation'=>[],
@@ -93,6 +93,7 @@ class GraphQL
             $schemaTypes = ArrayHelper::getValue($schema, 'types', []);
             $this->queries += $schemaQuery;
             $this->mutations += $schemaMutation;
+            $this->types += $schemaTypes;
             $this->getTypeResolution()->setAlias($schemaTypes);
         }
     }
@@ -341,5 +342,21 @@ class GraphQL
     public function setErrorFormatter(Callable $errorFormatter)
     {
         $this->errorFormatter = $errorFormatter;
+    }
+
+    /**
+     * validate the schema.
+     *
+     * when initial the schema,the types parameter must not passed.
+     *
+     * @param Schema $schema
+     */
+    public function assertValid($schema)
+    {
+        //the type come from the TypeResolution.
+        foreach ($this->types as $name => $type) {
+            $schema->getType($name);
+        }
+        $schema->assertValid();
     }
 }

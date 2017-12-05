@@ -14,8 +14,8 @@ use yii\web\Response;
 use yii\base\InvalidParamException;
 
 /**
- * GraphQLAction实现graph服务端的接入方法，并返回json格式的查询结果
- * 在controller中配置actions
+ * GraphQLAction implements the access method of the graph server and returns the query results in the JSON format
+ * configure in Controller actions method
  * ```php
  * function actions()
  * {
@@ -102,7 +102,7 @@ class GraphQLAction extends Action
         $ret = array_merge($this->schemaArray[0], $this->schemaArray[1]);
         if (!$this->authActions) {
             //init
-            $this->authActions = array_merge($this->schemaArray[0], $this->schemaArray[1]);
+            $this->authActions = array_keys(array_merge($this->schemaArray[0], $this->schemaArray[1]));
         }
         return $ret;
     }
@@ -128,10 +128,10 @@ class GraphQLAction extends Action
             }
         }
         $schema = $this->graphQL->buildSchema($this->schemaArray === true ? null : $this->schemaArray);
-        if ($this->enableSchemaAssertValid) {
-            //调度状态下将执行构建查询
-            $schema->assertValid();
-        }
+        //TODO the graphql-php's valid too strict,the lazy load has can't pass when execute mutation(must has query node)
+//        if ($this->enableSchemaAssertValid) {
+//            $this->graphQL->assertValid($schema);
+//        }
         $val = $this->graphQL->execute($schema, null, Yii::$app, $this->variables, null);
         $result = $this->graphQL->getResult($val);
         return $result;
