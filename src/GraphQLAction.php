@@ -102,7 +102,7 @@ class GraphQLAction extends Action
         $ret = array_merge($this->schemaArray[0], $this->schemaArray[1]);
         if (!$this->authActions) {
             //init
-            $this->authActions = array_keys(array_merge($this->schemaArray[0], $this->schemaArray[1]));
+            $this->authActions = array_merge($this->schemaArray[0], $this->schemaArray[1]);
         }
         return $ret;
     }
@@ -123,7 +123,7 @@ class GraphQLAction extends Action
     {
         Yii::$app->response->format = Response::FORMAT_JSON;
         if ($this->authActions && $this->checkAccess) {
-            foreach ($this->authActions as $childAction) {
+            foreach ($this->authActions as $childAction => $class) {
                 call_user_func($this->checkAccess, $childAction);
             }
         }
