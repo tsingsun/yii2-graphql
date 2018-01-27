@@ -124,7 +124,8 @@ class GraphQLAction extends Action
         Yii::$app->response->format = Response::FORMAT_JSON;
         if ($this->authActions && $this->checkAccess) {
             foreach ($this->authActions as $childAction => $class) {
-                call_user_func($this->checkAccess, $childAction);
+                $fn = $this->checkAccess;
+                $fn($childAction);
             }
         }
         $schema = $this->graphQL->buildSchema($this->schemaArray === true ? null : $this->schemaArray);

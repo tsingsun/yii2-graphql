@@ -205,7 +205,8 @@ class GraphQL
         if (!empty($executeResult->errors)) {
             $result['errors'] = [];
             foreach ($executeResult->errors as $er) {
-                $fr = call_user_func_array($this->errorFormatter, [$er]);
+                $fn = $this->errorFormatter;
+                $fr = $fn($er);
                 if (isset($fr['message'])) {
                     $result['errors'][] = $fr;
                 } else {

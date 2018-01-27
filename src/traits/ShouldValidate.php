@@ -36,7 +36,7 @@ trait ShouldValidate
                 }
             }
 
-            return call_user_func_array($resolver, $arguments);
+            return $resolver(...$arguments);
         };
     }
 }

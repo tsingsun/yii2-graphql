@@ -48,7 +48,7 @@ class GraphQLType extends GraphQLModel
             $resolver = array($this, $resolveMethod);
             return function () use ($resolver) {
                 $args = func_get_args();
-                return call_user_func_array($resolver, $args);
+                return $resolver(...$args);
             };
         }
 
