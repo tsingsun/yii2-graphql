@@ -120,7 +120,7 @@ also you can include the trait with your own components,then initialization your
     'componentsName '=>[
        'class'=>'xxx\xxxx\components'
        //graphql config
-       'schemas' => [        
+       'schema' => [        
           'query' => [
               'user' => 'app\graphql\query\UsersQuery'
           ],
