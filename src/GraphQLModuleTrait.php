@@ -23,7 +23,7 @@ trait GraphQLModuleTrait
      *
      * Example:
      *
-     * 'schemas' => [
+     * 'schema' => [
      *      'query' => [
      *          'user' => 'App\GraphQL\Query\UsersQuery'
      *      ],

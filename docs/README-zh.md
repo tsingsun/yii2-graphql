@@ -79,7 +79,7 @@ Yii config file:
     'graphql'=>[
        'class'=>'xxx\xxxx\module'
        //主graphql协议配置
-       'schemas' => [        
+       'schema' => [        
           'query' => [
               'user' => 'app\graphql\query\UsersQuery'
           ],

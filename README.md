@@ -83,7 +83,7 @@ in your config file:
     'moduleName '=>[
        'class'=>'xxx\xxxx\module'
        //graphql config
-       'schemas' => [        
+       'schema' => [        
           'query' => [
               'user' => 'app\graphql\query\UsersQuery'
           ],
