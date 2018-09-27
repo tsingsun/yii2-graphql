@@ -36,6 +36,7 @@ class GraphQLAction extends Action
     private $schemaArray;
     private $query;
     private $variables;
+    private $operationName;
     /**
      * @var array child graphql actions
      */
@@ -66,6 +67,7 @@ class GraphQLAction extends Action
         if ($request->isGet) {
             $this->query = $request->get('query');
             $this->variables = $request->get('variables');
+            $this->operationName = $request->get('operationName');
         } else {
             $body = $request->getBodyParams();
             if (empty($body)) {
@@ -74,6 +76,7 @@ class GraphQLAction extends Action
             } else {
                 $this->query = $body['query'] ?? $body;
                 $this->variables = $body['variables'] ?? [];
+                $this->operationName = $body['operationName'] ?? [];
             }
         }
         if (empty($this->query)) {
@@ -133,7 +136,7 @@ class GraphQLAction extends Action
 //        if ($this->enableSchemaAssertValid) {
 //            $this->graphQL->assertValid($schema);
 //        }
-        $val = $this->graphQL->execute($schema, null, Yii::$app, $this->variables, null);
+        $val = $this->graphQL->execute($schema, null, Yii::$app, $this->variables, $this->operationName);
         $result = $this->graphQL->getResult($val);
         return $result;
     }
