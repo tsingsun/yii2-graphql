@@ -76,7 +76,7 @@ class GraphQLAction extends Action
             } else {
                 $this->query = $body['query'] ?? $body;
                 $this->variables = $body['variables'] ?? [];
-                $this->operationName = $body['operationName'] ?? [];
+                $this->operationName = $body['operationName'] ?? null;
             }
         }
         if (empty($this->query)) {
