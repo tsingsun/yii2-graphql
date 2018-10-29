@@ -1,7 +1,7 @@
 yii-graphql
 ==========
-Using Facebook [GraphQL](http://facebook.github.io/graphql/) PHP server implementation. Extend [graphql-php](https://github.com/webonyx/graphql-php) to apply to YII2.
- 
+Using Facebook [GraphQL](http://facebook.github.io/graphql/) PHP server implementation. Extends [graphql-php](https://github.com/webonyx/graphql-php) to apply to YII2.
+
 [![Latest Stable Version](https://poser.pugx.org/tsingsun/yii2-graphql/v/stable.svg)](https://packagist.org/packages/tsingsun/yii2-graphql)
 [![Build Status](https://travis-ci.org/tsingsun/yii2-graphql.png?branch=master)](https://travis-ci.org/tsingsun/yii2-graphql)
 [![Total Downloads](https://poser.pugx.org/tsingsun/yii2-graphql/downloads.svg)](https://packagist.org/packages/tsingsun/yii2-graphql)
@@ -14,100 +14,119 @@ Using Facebook [GraphQL](http://facebook.github.io/graphql/) PHP server implemen
 
 Features
 
-* Configuration simplification includes simplifying the definition of standard graphql protocols.
-* Based on the full name defined by the type, implemented on-demand loading and lazy loading, and no need to load all type definitions into the system at the initial stage
-* Mutation input validation support
-* Provide controller integration and authorization support
+* Configuration includes simplifying the definition of standard graphql protocols.
+* Based on the full name defined by the type, implementing on-demand loading and lazy loading, and no need to define all type definitions into the system at load.
+* Mutation input validation support.
+* Provide controller integration and authorization support.
 
-### Install ###
+### Install
 
-use composer 
+Using [composer](https://getcomposer.org/)
 ```
 composer require tsingsun/yii2-graphql
 ```
 
-### Type ###
-The type system is the core of GraphQL, which is embodied in GraphQLType. By deconstructing the graphql protocol and using the graph-php library to achieve fine-grained control of all elements, it is convenient to extend the class according to its own needs
+### Type
+The type system is the core of GraphQL, which is embodied in `GraphQLType`. By deconstructing the GraphQL protocol and using the [graph-php](https://github.com/webonyx/graphql-php) library to achieve fine-grained control of all elements, it is convenient to extend the class according to its own needs
 
 
-The main elements of GraphQLType,** Notice that the element does not correspond to attributes or methods (the same below) **
+#### The main elements of `GraphQLType`
 
-element  | type | description
+The following elements can be declared in the `$attributes` property of the class, or as a method, unless stated otherwise. This also applies to all elements after this.
+
+Element  | Type | Description
 ----- | ----- | -----
-name | string | **Required** Each type needs to be named, and if it is the only one that is more secure, but not mandatory, the property needs to be defined in attribute
-fields | array | **Required** The included field content is represented by the fields () method.
-resolveField | callback | **function($value, $args, $context, GraphQL\Type\Definition\ResolveInfo $info)** For the interpretation of a field, such as the fields definition of the user property, the corresponding interpretation method is resolveUserField (), and $value is specified as a type instance defined by type
+`name` | string | **Required** Each type needs to be named, with unique names preferred to resolve potential conflicts. The property needs to be defined in the `$attributes` property.
+`description` | string | A description of the type and its use. The property needs to be defined in the `$attributes` property.
+`fields` | array | **Required** The included field content is represented by the fields () method.
+`resolveField` | callback | **function($value, $args, $context, GraphQL\Type\Definition\ResolveInfo $info)** For the interpretation of a field. For example: the fields definition of the user property, the corresponding method is `resolveUserField()`, and `$value` is the passed type instance defined by `type`.
 
-### Query ###
+### Query
 
-GraphQLQuery,GraphQLMutation inherited GraphQLField,The element structure is consistent, and you want to do it for some reusable Field, you can inherit it.
-Each query of Graphql needs to correspond to a GraphQLQuery object
+`GraphQLQuery` and `GraphQLMutation` inherit `GraphQLField`. The element structure is consistent, and if you would like a reusable `Field`, you can inherit it.
+Each query of `Graphql` needs to correspond to a `GraphQLQuery` object
 
-The main elements of GraphQLField
+#### The main elements of `GraphQLField`
 
- element | type  | description
+ Element | Type  | Description
 ----- | ----- | -----
-type | ObjectType | For the corresponding query type, the single type is specified by GraphQL:: type, and the list by Type:: listOf (GraphQL:: type)
-args | array | Query the parameters that need to be used, each of which is defined by Field
-resolve | callback | **function($value, $args, $context, GraphQL\Type\Definition\ResolveInfo $info)**,$value is the root data, $args is the query parameter, the $context context is the yii\web\Application object, and the $info resolves the object for the query. The root object is handled in this method
+`type` | ObjectType | For the corresponding query type. The single type is specified by `GraphQL::type`, and a list by `Type::listOf(GraphQL::type)`.
+`args` | array | The available query parameters, each of which is defined by `Field`.
+`resolve` | callback | **function($value, $args, $context, GraphQL\Type\Definition\ResolveInfo $info)** `$value` is the root data, `$args` is the query parameters, `$context` is the `yii\web\Application` object, and `$info` resolves the object for the query. The root object is handled in this method.
 
-### Mutation ###
+### Mutation
 
-Very similar to GraphQLQuery, refer to the instructions
+Definition is similar to `GraphQLQuery`, please refer to the above.
 
-### Simplified  ###
+### Simplified Field Definition
 
-Simplifies the declarations of Field, and the fields can be directly used by type
+Simplifies the declarations of `Field`, removing the need to defined as an array with the type key.
+
+#### Standard Definition
 
 ```php
-standard
-    'id'=>[
-        'type'=>type::id(),
-    ],
-simplified
-    'id'=>type::id()
+//...
+'id' => [
+    'type' => Type::id(),
+],
+//...
 ```
 
-### used in yii
+#### Simplified Definition
+
+```php
+//...
+'id' => Type::id(),
+//...
+```
+
+### Yii Implementation
 
 #### Module support
-it easy to integrate with GraphQLModuleTrait,the trait is responsible for initialization.
+
+Can easily be implemented with `yii\graphql\GraphQLModuleTrait`. The trait is responsible for initialization.
+
 ```php
-     class Module extends Module{
-        use GraphQLModuleTrait;
-     }
+class MyModule extends \yii\base\Module
+{
+    use \yii\graphql\GraphQLModuleTrait;
+}
 ```
-in your config file:
+
+In your application configuration file:
+
 ```php
 'modules'=>[
-    'moduleName '=>[
-       'class'=>'xxx\xxxx\module'
-       //graphql config
-       'schema' => [        
-          'query' => [
-              'user' => 'app\graphql\query\UsersQuery'
-          ],
-          'mutation' => [
-              'login'
-          ],
-          //if you use sample query except query contain interface,fragment,not need set
-          //the key must same as your class definded
-          'types'=>[          
-              'Story'=>'yiiunit\extensions\graphql\objects\types\StoryType'
-          ],
-        ]                
-    ],    
+    'moduleName ' => [
+        'class' => 'path\to\module'
+        //graphql config
+        'schema' => [
+            'query' => [
+                'user' => 'app\graphql\query\UsersQuery'
+            ],
+            'mutation' => [
+                'login'
+            ],
+            // you do not need to set the types if your query contains interfaces or fragments
+            // the key must same as your defined class
+            'types' => [
+                'Story' => 'yiiunit\extensions\graphql\objects\types\StoryType'
+            ],
+        ],
+    ],
 ];
 ```
-Use the controller to receive requests,access with GraphQLAction
+
+Use the controller to receive requests by using `yii\graphql\GraphQLAction`
+
 ```php
-class xxxController extends Controller{
-   function actions()
-   {
+class MyController extends Controller
+{
+   function actions() {
        return [
             'index'=>[
                 'class'=>'yii\graphql\GraphQLAction'
-            ]
+            ],
        ];
    }
 }
@@ -117,72 +136,73 @@ class xxxController extends Controller{
 also you can include the trait with your own components,then initialization yourself.
 ```php
 'components'=>[
-    'componentsName '=>[
-       'class'=>'xxx\xxxx\components'
-       //graphql config
-       'schema' => [        
-          'query' => [
-              'user' => 'app\graphql\query\UsersQuery'
-          ],
-          'mutation' => [
-              'login'
-          ],
-          //if you use sample query except query contain interface,fragment,not need set
-          //the key must same as your class definded
-          'types'=>[          
-              'Story'=>'yiiunit\extensions\graphql\objects\types\StoryType'
-          ],
-        ]                
-    ],    
+    'componentsName' => [
+        'class' => 'path\to\components'
+        //graphql config
+        'schema' => [
+            'query' => [
+                'user' => 'app\graphql\query\UsersQuery'
+            ],
+            'mutation' => [
+                'login'
+            ],
+            // you do not need to set the types if your query contains interfaces or fragments
+            // the key must same as your defined class
+            'types'=>[
+                'Story'=>'yiiunit\extensions\graphql\objects\types\StoryType'
+            ],
+        ],
+    ],
 ];
 ```
 
 
 ### Input validation
 
-Validation support is provided for data submission of mutation
-In addition to graphql based validate, you can also use Yii Model validate, which is currently used for validation of input parameters. The rules method is added directly to the mutation definition
-```php
-public function rules()
-    {
-        return [
-            ['password','boolean']
-        ];
-    }
+Validation rules are supported.
+In addition to graphql based validation, you can also use Yii Model validation, which is currently used for the validation of input parameters. The rules method is added directly to the mutation definition.
 
+```php
+public function rules() {
+    return [
+        ['password','boolean']
+    ];
+}
 ```
 
 ### Authorization verification
 
-Since graphql queries can be combined, such as when a query merges two query, and the two query have different authorization constraints, custom authentication is required in graph.
-I refer to this query as "graphql actions"; when all graphql actions conditions are configured, it pass the authorization check.
+Since graphql queries can be combined, such as when a query merges two query, and the two query have different authorization constraints, custom authentication is required.
+I refer to this query as "graphql actions"; when all graphql actions conditions are configured, it passes the authorization check.
 
 #### Authenticate
+
 In the behavior method of controller, the authorization method is set as follows
+
 ```php
-function behaviors()
-{
+function behaviors() {
     return [
         'authenticator'=>[
-            'class'=>'yii\graphql\filter\auth\CompositeAuth',
-            'authMethods'=>[
+            'class' => 'yii\graphql\filter\auth\CompositeAuth',
+            'authMethods' => [
                 \yii\filters\auth\QueryParamAuth::className(),
             ],
-            'except'=>['hello']
+            'except' => ['hello']
         ],
     ];
 }
 ```
-If you want to support IntrospectionQuery authorization, the corresponding graphql action is "__schema"
+If you want to support IntrospectionQuery authorization, the corresponding graphql action is `__schema`
 
 #### Authorization
-if user has pass authenticate,you maybe want to check the access for the resource.you can use GraphqlAction's checkAccess
-in controller where the action host.it will check all graphql actions.
+
+If the user has passed authentication, you may want to check the access for the resource. You can use `GraphqlAction`'s `checkAccess` method
+in the controller. It will check all graphql actions.
+
 ```php
 class GraphqlController extends Controller
 {
-    public function actions()
-    {
+    public function actions() {
         return [
             'index' => [
                 'class' => 'yii\graphql\GraphQLAction',
@@ -190,19 +210,19 @@ class GraphqlController extends Controller
             ]
         ];
     }
+
     /**
      * authorization
      * @param $actionName
      * @throws yii\web\ForbiddenHttpException
      */
-    public function checkAccess($actionName)
-    {
+    public function checkAccess($actionName) {
         $permissionName = $this->module->id . '/' . $actionName;
         $pass = Yii::$app->getAuthManager()->checkAccess(Yii::$app->user->id,$permissionName);
-        if(!$pass){
+        if (!$pass){
             throw new yii\web\ForbiddenHttpException('Access Denied');
         }
-    }    
+    }
 }
 ```
 
@@ -210,27 +230,24 @@ class GraphqlController extends Controller
 
 #### Creating queries based on graphql protocols
 
-Each query corresponds to a GraphQLQuery file
-```php
+Each query corresponds to a GraphQLQuery file.
 
+```php
 class UserQuery extends GraphQLQuery
 {
-    public function type()
-    {
+    public function type() {
         return GraphQL::type(UserType::class);
     }
 
-    public function args()
-    {
+    public function args() {
         return [
             'id'=>[
-                'type'=>Type::nonNull(Type::id())
+                'type' => Type::nonNull(Type::id())
             ],
         ];
     }
 
-    public function resolve($value, $args, $context, ResolveInfo $info)
-    {
+    public function resolve($value, $args, $context, ResolveInfo $info) {
         return DataSource::findUser($args['id']);
     }
 
@@ -239,6 +256,7 @@ class UserQuery extends GraphQLQuery
 ```
 
 Define type files based on query protocols
+
 ```php
 
 class UserType extends GraphQLType
@@ -348,20 +366,21 @@ class UserType extends GraphQLType
     "
 ```
 
-### Handle Exception
+### Exception Handling
 
-you can config the error formater for graph,the default handle use yii\graphql\ErrorFormatter,
-it optimized processing of Model validation results
+You can config the error formater for graph. The default handle uses `yii\graphql\ErrorFormatter`,
+which optimizes the processing of Model validation results.
+
 ```php
 'modules'=>[
-    'moduleName '=>[
-       'class'=>'xxx\xxxx\module'
-       'errorFormatter'=>['yii\graphql\ErrorFormatter','formatError'],               
-    ],    
+    'moduleName' => [
+       'class' => 'path\to\module'
+       'errorFormatter' => ['yii\graphql\ErrorFormatter', 'formatError'],
+    ],
 ];
 ```
 
 ### Future
 
-* ActiveRecord generate tool for generating query and mutation class.
-* Some of the special syntax for graphql,such as @Directives,has not test
+* `ActiveRecord` tool for generating query and mutation class.
+* Some of the special syntax for graphql, such as `@Directives`, has not been tested
