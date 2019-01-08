@@ -82,6 +82,20 @@ Simplifies the declarations of `Field`, removing the need to defined as an array
 
 ### Yii Implementation
 
+### General configuration
+
+JsonParser configuration required
+
+```php
+'components' => [
+    'request' => [
+        'parsers' => [
+            'application/json' => 'yii\web\JsonParser',
+        ],
+    ],
+];
+```
+
 #### Module support
 
 Can easily be implemented with `yii\graphql\GraphQLModuleTrait`. The trait is responsible for initialization.
