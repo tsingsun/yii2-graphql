@@ -4,7 +4,7 @@ namespace yii\graphql;
 
 use Yii;
 use GraphQL\Error\Error;
-use GraphQL\FormattedError;
+use GraphQL\Error\FormattedError;
 use yii\graphql\exceptions\ValidatorException;
 use yii\web\HttpException;
 
