@@ -1,5 +1,8 @@
 Yii2 Graphql Changelog
 =======================
+# 0.13
+- update for graphql-php(v0.13)
+- add graphql-upload(v4.0.0)
 # 0.11
 - update for graphql-php(v0.11)
 - Enh: default ErrorFormatter log the error from graphql-php

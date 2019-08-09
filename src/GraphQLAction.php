@@ -12,6 +12,8 @@ use Yii;
 use yii\base\Action;
 use yii\web\Response;
 use yii\base\InvalidParamException;
+use GraphQL\Upload\UploadMiddleware;
+use Zend\Diactoros\ServerRequestFactory;
 
 /**
  * GraphQLAction implements the access method of the graph server and returns the query results in the JSON format
@@ -74,9 +76,20 @@ class GraphQLAction extends Action
                 //取原始文件当查询,这时只支持如其他方式下的query的节点的查询
                 $this->query = $request->getRawBody();
             } else {
-                $this->query = $body['query'] ?? $body;
-                $this->variables = $body['variables'] ?? [];
-                $this->operationName = $body['operationName'] ?? null;
+                if (!empty($body['operations'])) {
+                    $serverRequest = ServerRequestFactory::fromGlobals();
+                    $uploadMiddleware = new UploadMiddleware();
+                    $serverRequest = $uploadMiddleware->processRequest($serverRequest);
+                    $parsedBody = $serverRequest->getParsedBody();
+
+                    $this->query = $parsedBody['query'] ?? $parsedBody;
+                    $this->variables = $parsedBody['variables']  ?? [];
+                    $this->operationName = $parsedBody['operationName']  ?? null;
+                } else {
+                    $this->query = $body['query'] ?? $body;
+                    $this->variables = $body['variables'] ?? [];
+                    $this->operationName = $body['operationName'] ?? null;
+                }
             }
         }
         if (empty($this->query)) {

@@ -69,7 +69,7 @@ class TypeResolution
         foreach ($graphTypes as $type) {
             $typeMap = Utils\TypeInfo::extractTypes($type, $typeMap);
         }
-        $this->typeMap = $typeMap + Type::getInternalTypes();
+        $this->typeMap = $typeMap + Type::getStandardTypes();
 
         // Keep track of all possible types for abstract types
         foreach ($this->typeMap as $typeName => $type) {
